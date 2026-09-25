@@ -2,10 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { CameraControls } from '../camera/CameraControls';
-import { TrackingStatus } from '../hand-tracking/TrackingStatus';
 import { CameraStatus } from '../../types/camera';
-import { Sparkles, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, Camera, CameraOff, Volume2, VolumeX, FlipHorizontal, Eye, EyeOff, SwitchCamera } from 'lucide-react';
 
 interface StudioToolbarProps {
   cameraStatus: CameraStatus;
@@ -14,12 +12,14 @@ interface StudioToolbarProps {
   activeHandSide?: 'Left' | 'Right' | null;
   isMirrored: boolean;
   debugMode: boolean;
+  isAudioMuted: boolean;
   hasMultipleCameras?: boolean;
   onStartCamera: () => void;
   onStopCamera: () => void;
   onFlipCamera?: () => void;
   onToggleMirror: () => void;
   onToggleDebug: () => void;
+  onToggleAudio: () => void;
 }
 
 export const StudioToolbar: React.FC<StudioToolbarProps> = ({
@@ -29,56 +29,125 @@ export const StudioToolbar: React.FC<StudioToolbarProps> = ({
   activeHandSide,
   isMirrored,
   debugMode,
+  isAudioMuted,
   hasMultipleCameras,
   onStartCamera,
   onStopCamera,
   onFlipCamera,
   onToggleMirror,
   onToggleDebug,
+  onToggleAudio,
 }) => {
+  const isStreaming = cameraStatus === 'active';
+
   return (
     <header className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between gap-3 pointer-events-none">
-      {/* Left: Branding & Exit to Home */}
-      <div className="flex items-center gap-3 pointer-events-auto">
+      {/* Left: "< Back to home" Frosted Pill (Inspired by Reference 1) */}
+      <div className="flex items-center gap-2.5 pointer-events-auto">
         <Link
           href="/"
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-black/60 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/10 backdrop-blur-md transition-all duration-200"
-          title="Exit to Overview"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/9 hover:bg-white/16 backdrop-blur-2xl border border-white/15 text-white/90 hover:text-white text-xs font-medium transition-all duration-200 shadow-sm"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ChevronLeft className="w-4 h-4 text-white/70" />
+          <span>Back to home</span>
         </Link>
 
-        <div className="hidden sm:flex items-center gap-2.5 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/10 shadow-lg">
-          <div className="w-6 h-6 rounded-full bg-linear-to-tr from-cyan-500 to-amber-400 flex items-center justify-center text-black">
-            <Sparkles className="w-3.5 h-3.5" />
-          </div>
-          <div>
-            <h1 className="text-xs font-bold text-white tracking-wide leading-none">AR STUDIO</h1>
-            <span className="text-[10px] text-cyan-400 tracking-wider font-mono">NEURAL HOLOGRAM</span>
-          </div>
+        {/* Status Pill */}
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/6 backdrop-blur-2xl border border-white/10 text-[11px] text-white/70">
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              isHandDetected
+                ? 'bg-emerald-400 animate-pulse'
+                : isStreaming
+                ? 'bg-amber-400'
+                : 'bg-neutral-500'
+            }`}
+          />
+          <span>
+            {isHandDetected
+              ? `Hand Locked ${activeHandSide ? `(${activeHandSide})` : ''}`
+              : isStreaming
+              ? 'Show palm to camera'
+              : 'Standby'}
+          </span>
         </div>
-
-        {/* Tracking status badge */}
-        <TrackingStatus
-          cameraStatus={cameraStatus}
-          isModelReady={isModelReady}
-          isHandDetected={isHandDetected}
-          activeHandSide={activeHandSide}
-        />
       </div>
 
-      {/* Right: Camera Action & Feature Controls */}
-      <CameraControls
-        status={cameraStatus}
-        isMirrored={isMirrored}
-        debugMode={debugMode}
-        hasMultipleCameras={hasMultipleCameras}
-        onStartCamera={onStartCamera}
-        onStopCamera={onStopCamera}
-        onFlipCamera={onFlipCamera}
-        onToggleMirror={onToggleMirror}
-        onToggleDebug={onToggleDebug}
-      />
+      {/* Right: Sound, Camera Toggles, and Menu (Inspired by Reference 1 & 2) */}
+      <div className="flex items-center gap-2 pointer-events-auto">
+        {/* Sound toggle pill */}
+        <button
+          onClick={onToggleAudio}
+          title={isAudioMuted ? 'Unmute Audio' : 'Mute Audio'}
+          className={`p-2.5 rounded-full backdrop-blur-2xl border transition-all cursor-pointer ${
+            !isAudioMuted
+              ? 'bg-white/12 text-amber-300 border-white/20 shadow-sm'
+              : 'bg-white/6 text-white/50 border-white/10 hover:text-white'
+          }`}
+        >
+          {!isAudioMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+        </button>
+
+        {/* Flip Camera (Front / Rear) Toggle for Mobile */}
+        {isStreaming && onFlipCamera && (
+          <button
+            onClick={onFlipCamera}
+            title="Switch Camera (Front / Back)"
+            className="p-2.5 rounded-full backdrop-blur-2xl border bg-white/6 text-white/70 border-white/10 hover:text-white hover:bg-white/12 transition-all cursor-pointer"
+          >
+            <SwitchCamera className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Camera Mirror Toggle */}
+        {isStreaming && (
+          <button
+            onClick={onToggleMirror}
+            title={isMirrored ? 'Unmirror Camera' : 'Mirror Camera'}
+            className={`p-2.5 rounded-full backdrop-blur-2xl border transition-all cursor-pointer ${
+              isMirrored
+                ? 'bg-white/12 text-white border-white/20'
+                : 'bg-white/6 text-white/50 border-white/10 hover:text-white'
+            }`}
+          >
+            <FlipHorizontal className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Debug Toggle */}
+        {isStreaming && (
+          <button
+            onClick={onToggleDebug}
+            title={debugMode ? 'Hide Neural Joints' : 'Show Neural Joints'}
+            className={`p-2.5 rounded-full backdrop-blur-2xl border transition-all cursor-pointer ${
+              debugMode
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                : 'bg-white/6 text-white/50 border-white/10 hover:text-white'
+            }`}
+          >
+            {debugMode ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </button>
+        )}
+
+        {/* Camera Start / Stop Pill */}
+        {!isStreaming ? (
+          <button
+            onClick={onStartCamera}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black font-semibold text-xs shadow-md hover:bg-white/90 transition-all cursor-pointer"
+          >
+            <Camera className="w-3.5 h-3.5 fill-current" />
+            <span>Start</span>
+          </button>
+        ) : (
+          <button
+            onClick={onStopCamera}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/8 hover:bg-red-500/20 text-white/80 hover:text-red-300 backdrop-blur-2xl border border-white/12 hover:border-red-500/30 text-xs font-medium transition-all cursor-pointer"
+          >
+            <CameraOff className="w-3.5 h-3.5" />
+            <span>Stop</span>
+          </button>
+        )}
+      </div>
     </header>
   );
 };

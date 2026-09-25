@@ -47,21 +47,45 @@ export function calculateRawPalmData(
   // Right vector across palm
   const vAcross = new THREE.Vector3().subVectors(vPinky, vIndex).normalize();
 
-  // Normal vector: cross product of Up and Across
-  // For right hand vs left hand, adjust sign so normal points out of palm surface
+  // Normal vector pointing out of palm face (towards camera / up into air from palm):
+  // When palm faces the viewer (+Z):
+  // Left hand: Pinky is at left (-X), Index is at right (+X). vAcross points left (-X). vUp points up (+Y).
+  // vUp cross vAcross = [0, 1, 0] x [-1, 0, 0] = [0, 0, 1] (+Z, towards camera, out of palm face).
+  // Right hand: Pinky is at right (+X), Index is at left (-X). vAcross points right (+X). vUp points up (+Y).
+  // vAcross cross vUp = [1, 0, 0] x [0, 1, 0] = [0, 0, 1] (+Z, towards camera, out of palm face).
   const vNormal = new THREE.Vector3();
   if (handedness === 'Left') {
-    vNormal.crossVectors(vAcross, vUp).normalize();
-  } else {
     vNormal.crossVectors(vUp, vAcross).normalize();
+  } else {
+    vNormal.crossVectors(vAcross, vUp).normalize();
   }
 
-  // Ensure orthonormal basis
-  const vRight = new THREE.Vector3().crossVectors(vUp, vNormal).normalize();
+  // Construct orthonormal coordinate frame for 3D objects:
+  // - local Y axis (upright): MUST BE vNormal!
+  //   In Three.js standard conventions:
+  //   1) Character models stand along local +Y (feet at Y=0, head at +Y).
+  //      Setting yAxis = vNormal makes characters stand vertically UP on the palm!
+  //   2) Shields, magic circles, and planar VFX lie in the X-Z plane with normal +Y.
+  //      Setting yAxis = vNormal makes shields lie completely FLAT on the palm face!
+  const yAxis = vNormal.clone().normalize();
 
-  // Create rotation matrix from orthonormal basis
+  // - local Z axis: character gaze / forward direction.
+  //   When a user holds out their hand, fingers point away along vUp, and wrist is at -vUp.
+  //   We want the character to face the user (towards the wrist).
+  //   Orthogonalize -vUp against yAxis:
+  const zDir = vUp.clone().negate();
+  let zAxis = zDir.clone().sub(yAxis.clone().multiplyScalar(zDir.dot(yAxis))).normalize();
+  if (zAxis.lengthSq() < 0.001) {
+    zAxis = new THREE.Vector3(0, 0, 1);
+  }
+
+  // - local X axis: orthogonal right vector to complete right-handed basis (X x Y = Z)
+  const xAxis = new THREE.Vector3().crossVectors(yAxis, zAxis).normalize();
+
+  // Create rotation matrix from orthonormal basis:
+  // Column 0 = xAxis, Column 1 = yAxis (UP from palm), Column 2 = zAxis (character front / toward user)
   const rotMatrix = new THREE.Matrix4();
-  rotMatrix.makeBasis(vRight, vUp, vNormal);
+  rotMatrix.makeBasis(xAxis, yAxis, zAxis);
 
   const quaternion = new THREE.Quaternion().setFromRotationMatrix(rotMatrix);
   const rotationEuler = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ');
@@ -75,8 +99,8 @@ export function calculateRawPalmData(
   return {
     center: { x: centerX, y: centerY, z: centerZ },
     normal: vNormal,
-    directionUp: vUp,
-    directionRight: vRight,
+    directionUp: yAxis,
+    directionRight: xAxis,
     rotationEuler,
     quaternion,
     handSpan: Math.max(0.05, Math.min(handSpan, 0.45)),

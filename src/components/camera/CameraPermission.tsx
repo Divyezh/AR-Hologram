@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Camera, ShieldCheck, Sparkles } from 'lucide-react';
+import { Camera, ShieldCheck, Sparkles, RefreshCw } from 'lucide-react';
 
 interface CameraPermissionProps {
   onGrantPermission: () => void;
@@ -13,34 +13,51 @@ export const CameraPermission: React.FC<CameraPermissionProps> = ({
   isRequesting,
 }) => {
   return (
-    <div className="absolute inset-0 z-20 flex items-center justify-center p-6 bg-black/85 backdrop-blur-md">
-      <div className="max-w-md w-full p-8 rounded-3xl bg-neutral-900/90 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] text-center flex flex-col items-center">
-        {/* Glow Icon */}
-        <div className="relative mb-6">
-          <div className="absolute -inset-2 bg-linear-to-r from-cyan-500 to-blue-600 rounded-full blur-xl opacity-60 animate-pulse" />
-          <div className="relative w-20 h-20 rounded-full bg-neutral-950 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
-            <Camera className="w-10 h-10" />
-          </div>
+    <div className="absolute inset-0 z-30 flex items-center justify-center p-6 bg-black/75 backdrop-blur-xl">
+      {/* Background ambient warm diffuse glow */}
+      <div className="absolute w-112.5 h-112.5 bg-linear-to-tr from-orange-600/20 via-amber-600/15 to-transparent rounded-full blur-[100px] pointer-events-none" />
+
+      {/* Floating squircle card from reference inspiration */}
+      <div className="relative max-w-sm w-full p-8 sm:p-9 rounded-[40px] bg-white/8 backdrop-blur-3xl border border-white/18 shadow-[0_20px_50px_rgba(0,0,0,0.6)] text-center flex flex-col items-center">
+        {/* Top inner rim highlight */}
+        <div className="absolute top-0 inset-x-12 h-px bg-linear-to-r from-transparent via-white/30 to-transparent" />
+
+        {/* Minimal frosted circle icon */}
+        <div className="w-16 h-16 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white mb-6 shadow-inner">
+          <Camera className="w-7 h-7" />
         </div>
 
-        <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Enable Camera For AR</h2>
-        <p className="text-sm text-neutral-400 mb-6 leading-relaxed">
-          AR Hologram Studio processes your video feed locally inside your browser using MediaPipe neural networks.
-          Your camera feed is never uploaded to any remote server.
+        <h2 className="text-2xl font-semibold tracking-[-0.02em] text-white mb-2">
+          Enable Camera
+        </h2>
+        <p className="text-xs text-white/60 font-light leading-relaxed mb-6">
+          AR Hologram Studio processes your video feed locally in your browser using MediaPipe neural networks.
+          No video or audio is ever recorded or uploaded.
         </p>
 
-        <div className="flex items-center gap-3 px-4 py-2 mb-6 rounded-full bg-cyan-950/40 border border-cyan-800/40 text-xs text-cyan-300">
-          <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
-          <span>100% Client-Side Privacy Guaranteed</span>
+        {/* Privacy Pill */}
+        <div className="flex items-center gap-2 px-3 py-1 mb-6 rounded-full bg-white/6 border border-white/10 text-[11px] text-white/70">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <span>100% Client-Side Privacy</span>
         </div>
 
+        {/* Solid White Pill Action Button */}
         <button
           onClick={onGrantPermission}
           disabled={isRequesting}
-          className="w-full flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-2xl bg-linear-to-r from-cyan-500 via-teal-400 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 text-black font-semibold text-base shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all duration-300 disabled:opacity-50 cursor-pointer"
+          className="w-full flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-full bg-white hover:bg-neutral-100 text-neutral-950 font-semibold text-sm shadow-[0_8px_25px_rgba(255,255,255,0.25)] transition-all duration-300 disabled:opacity-50 active:scale-95 cursor-pointer"
         >
-          <Sparkles className="w-5 h-5" />
-          <span>{isRequesting ? 'Requesting Permission...' : 'Allow Camera Access'}</span>
+          {isRequesting ? (
+            <>
+              <RefreshCw className="w-4 h-4 animate-spin text-neutral-700" />
+              <span>Starting Camera...</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4 fill-neutral-950" />
+              <span>Allow Camera Access</span>
+            </>
+          )}
         </button>
       </div>
     </div>

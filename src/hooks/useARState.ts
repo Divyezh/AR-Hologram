@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { ARStudioState } from '../types/ar';
 import { CHARACTERS } from '../data/characters';
 import { EFFECTS } from '../data/effects';
+import { soundManager } from '../lib/audio/soundManager';
 
 export function useARState() {
   const [state, setState] = useState<ARStudioState>({
@@ -24,7 +25,10 @@ export function useARState() {
     detectionLatency: 0,
   });
 
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
+
   const selectCharacter = useCallback((id: string) => {
+    soundManager.playClick();
     const char = CHARACTERS.find((c) => c.id === id);
     setState((prev) => ({
       ...prev,
@@ -34,23 +38,33 @@ export function useARState() {
   }, []);
 
   const selectEffect = useCallback((id: string) => {
+    soundManager.playClick();
     setState((prev) => ({ ...prev, selectedEffectId: id }));
   }, []);
 
-  const selectAnimation = useCallback((id: string) => {
-    setState((prev) => ({ ...prev, selectedAnimationId: id }));
+  const selectAnimation = useCallback((anim: string) => {
+    soundManager.playClick();
+    setState((prev) => ({ ...prev, selectedAnimationId: anim }));
   }, []);
 
   const toggleDebugMode = useCallback(() => {
+    soundManager.playClick();
     setState((prev) => ({ ...prev, debugMode: !prev.debugMode }));
   }, []);
 
   const toggleMirrorMode = useCallback(() => {
+    soundManager.playClick();
     setState((prev) => ({ ...prev, isMirrored: !prev.isMirrored }));
   }, []);
 
   const toggleParticles = useCallback(() => {
+    soundManager.playClick();
     setState((prev) => ({ ...prev, particlesEnabled: !prev.particlesEnabled }));
+  }, []);
+
+  const toggleAudio = useCallback(() => {
+    const muted = soundManager.toggleMute();
+    setIsAudioMuted(muted);
   }, []);
 
   const setEffectsIntensity = useCallback((intensity: number) => {
@@ -59,7 +73,6 @@ export function useARState() {
 
   const updateTelemetry = useCallback((fps: number, latency: number, isHandDetected: boolean, handSide: 'Left' | 'Right' | null) => {
     setState((prev) => {
-      // Only update if changed to avoid unnecessary re-renders
       if (
         prev.fps === fps &&
         prev.detectionLatency === latency &&
@@ -84,12 +97,14 @@ export function useARState() {
 
   return {
     state,
+    isAudioMuted,
     selectCharacter,
     selectEffect,
     selectAnimation,
     toggleDebugMode,
     toggleMirrorMode,
     toggleParticles,
+    toggleAudio,
     setEffectsIntensity,
     updateTelemetry,
     setTrackingReady,

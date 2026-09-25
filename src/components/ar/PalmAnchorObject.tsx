@@ -4,7 +4,7 @@ import React, { useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { PalmAnchor } from '../../types/palm';
-import { MagicRing } from '../vfx/MagicRing';
+import { VFXRenderer } from '../vfx/VFXRenderer';
 import { CharacterRenderer } from '../characters/CharacterRenderer';
 import { EffectConfig } from '../../types/effects';
 
@@ -67,15 +67,15 @@ export const PalmAnchorObject: React.FC<PalmAnchorObjectProps> = ({
             |
             +-- HologramRoot
                     |
-                    +-- MagicRing (anchored at palm surface)
+                    +-- VFXRenderer (Doctor Strange Shield, Burning Fireball, etc.)
                     |
-                    +-- Character (elevated directly above the ring)
+                    +-- Character (seated or standing atop the effect)
       */}
       <group name="HologramRoot">
-        {/* Magic Ring on the palm plane */}
-        <MagicRing effect={effect} particlesEnabled={particlesEnabled} />
+        {/* Dynamic active VFX on palm */}
+        <VFXRenderer effect={effect} particlesEnabled={particlesEnabled} />
 
-        {/* Character positioned above the ring */}
+        {/* 3D Character positioned on palm */}
         <CharacterRenderer characterId={characterId} animationName={animationName} />
       </group>
     </group>

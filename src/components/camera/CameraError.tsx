@@ -16,29 +16,29 @@ export const CameraError: React.FC<CameraErrorProps> = ({
   onRetry,
 }) => {
   return (
-    <div className="absolute inset-0 z-30 flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
-      <div className="max-w-md w-full p-8 rounded-3xl bg-neutral-900 border border-red-500/30 text-center flex flex-col items-center shadow-[0_0_50px_rgba(239,68,68,0.2)]">
-        <div className="w-16 h-16 rounded-full bg-red-950/80 border border-red-500/50 flex items-center justify-center text-red-400 mb-5">
-          <AlertCircle className="w-8 h-8" />
+    <div className="absolute inset-0 z-30 flex items-center justify-center p-6 bg-black/80 backdrop-blur-2xl">
+      <div className="relative max-w-sm w-full p-8 rounded-[40px] bg-white/8 backdrop-blur-3xl border border-red-500/30 text-center flex flex-col items-center shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
+        <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mb-5 shadow-inner">
+          <AlertCircle className="w-7 h-7" />
         </div>
 
-        <h3 className="text-xl font-bold text-white mb-2">Camera Unavailable</h3>
-        <p className="text-sm text-neutral-300 mb-4">{error}</p>
+        <h3 className="text-xl font-semibold text-white mb-2">Camera Unavailable</h3>
+        <p className="text-xs text-white/60 font-light mb-4 leading-relaxed">{error}</p>
 
         {errorType === 'NotAllowedError' && (
-          <div className="p-3 mb-6 rounded-xl bg-neutral-800/80 text-xs text-neutral-400 text-left border border-white/5 space-y-1">
-            <p className="font-semibold text-neutral-200">How to fix:</p>
-            <p>1. Click the lock/tune icon near your browser address bar.</p>
-            <p>2. Set Camera permissions to &quot;Allow&quot;.</p>
-            <p>3. Reload this page or click Retry below.</p>
+          <div className="p-3 mb-6 rounded-2xl bg-white/4 text-[11px] text-white/60 text-left border border-white/8 space-y-1">
+            <p className="font-semibold text-white/80">To enable camera:</p>
+            <p>1. Tap the site settings / lock icon in the address bar.</p>
+            <p>2. Toggle Camera permission to &quot;Allow&quot;.</p>
+            <p>3. Tap Try Again below.</p>
           </div>
         )}
 
         <button
           onClick={onRetry}
-          className="flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium text-sm transition-all duration-200 cursor-pointer shadow-lg shadow-red-600/30"
+          className="flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-white hover:bg-neutral-100 text-black font-semibold text-xs transition-all duration-200 cursor-pointer shadow-md active:scale-95"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-3.5 h-3.5 text-neutral-800" />
           <span>Try Again</span>
         </button>
       </div>

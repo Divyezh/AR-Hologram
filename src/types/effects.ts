@@ -1,7 +1,10 @@
+export type EffectType = 'doctor-strange' | 'fireball' | 'vortex' | 'lightning';
+
 export interface EffectConfig {
   id: string;
   name: string;
-  category: 'arcane' | 'cyber' | 'cosmic' | 'elemental';
+  category: 'arcane' | 'fire' | 'cosmic' | 'lightning';
+  type: EffectType;
   description: string;
   primaryColor: string;
   secondaryColor: string;
@@ -11,5 +14,5 @@ export interface EffectConfig {
   rotationSpeed: number;
   pulseSpeed: number;
   intensity: number;
-  runeStyle: 'glyphs' | 'circuit' | 'celestial' | 'elemental';
+  soundType: 'mandala' | 'fire' | 'cosmic' | 'lightning';
 }

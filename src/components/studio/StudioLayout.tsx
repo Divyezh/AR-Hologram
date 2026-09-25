@@ -14,6 +14,7 @@ import { StudioToolbar } from './StudioToolbar';
 import { StudioControls } from './StudioControls';
 import { DebugPanel } from './DebugPanel';
 import { EFFECTS } from '../../data/effects';
+import { soundManager } from '../../lib/audio/soundManager';
 
 export const StudioLayout: React.FC = () => {
   const {
@@ -50,11 +51,13 @@ export const StudioLayout: React.FC = () => {
 
   const {
     state: arState,
+    isAudioMuted,
     selectCharacter,
     selectEffect,
     selectAnimation,
     toggleDebugMode,
     toggleParticles,
+    toggleAudio,
     setEffectsIntensity,
     updateTelemetry,
     setTrackingReady,
@@ -67,20 +70,39 @@ export const StudioLayout: React.FC = () => {
     setTrackingReady(isTrackingReady);
   }, [isTrackingReady, setTrackingReady]);
 
-  // When camera stops, reset anchor
+  // When camera stops, reset anchor & stop sounds
   useEffect(() => {
     if (!isCameraActive) {
       resetAnchor();
+      soundManager.stopEffectSound();
     }
   }, [isCameraActive, resetAnchor]);
 
   const currentEffect = EFFECTS.find((e) => e.id === arState.selectedEffectId) || EFFECTS[0];
 
+  // Trigger Howler sound effects when hand is detected or effect changes
+  useEffect(() => {
+    if (arState.isHandDetected && isCameraActive) {
+      soundManager.playIgnite();
+      soundManager.startEffectSound(currentEffect.soundType);
+    } else {
+      soundManager.stopEffectSound();
+    }
+  }, [arState.isHandDetected, currentEffect.soundType, isCameraActive]);
+
+  useEffect(() => {
+    return () => {
+      soundManager.stopEffectSound();
+    };
+  }, []);
+
   const handleStartCamera = useCallback(() => {
+    soundManager.init();
     startCamera();
   }, [startCamera]);
 
   const handleRetryCamera = useCallback(() => {
+    soundManager.init();
     startCamera();
   }, [startCamera]);
 
@@ -123,12 +145,14 @@ export const StudioLayout: React.FC = () => {
         activeHandSide={arState.activeHandSide}
         isMirrored={isMirrored}
         debugMode={arState.debugMode}
+        isAudioMuted={isAudioMuted}
         hasMultipleCameras={devices.length > 1}
         onStartCamera={handleStartCamera}
         onStopCamera={stopCamera}
         onFlipCamera={toggleFacingMode}
         onToggleMirror={toggleMirrored}
         onToggleDebug={toggleDebugMode}
+        onToggleAudio={toggleAudio}
       />
 
       {/* 4. Studio Bottom Selection Dock */}

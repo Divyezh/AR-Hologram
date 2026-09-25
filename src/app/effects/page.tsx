@@ -63,8 +63,8 @@ export default function EffectsPage() {
                     <span className="text-white font-semibold">{effect.particleCount} units</span>
                   </div>
                   <div>
-                    <span className="text-neutral-500 block">Rune Style</span>
-                    <span className="text-amber-400 uppercase font-semibold">{effect.runeStyle}</span>
+                    <span className="text-neutral-500 block">Effect Type</span>
+                    <span className="text-amber-400 uppercase font-semibold">{effect.type}</span>
                   </div>
                   <div>
                     <span className="text-neutral-500 block">Pulse Speed</span>
