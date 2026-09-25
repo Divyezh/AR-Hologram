@@ -12,6 +12,7 @@ import { AROverlay } from '../ar/AROverlay';
 import { ARLoading } from '../ar/ARLoading';
 import { StudioToolbar } from './StudioToolbar';
 import { StudioControls } from './StudioControls';
+import { EffectSelector } from './EffectSelector';
 import { DebugPanel } from './DebugPanel';
 import { EFFECTS } from '../../data/effects';
 import { soundManager } from '../../lib/audio/soundManager';
@@ -155,7 +156,17 @@ export const StudioLayout: React.FC = () => {
         onToggleAudio={toggleAudio}
       />
 
-      {/* 4. Studio Bottom Selection Dock */}
+      {/* 4. Quick Effect Selector Bar on Main Video Screen */}
+      <div className="absolute top-18 left-0 right-0 z-20 flex justify-center px-4 pointer-events-none">
+        <div className="p-1 rounded-full bg-black/60 backdrop-blur-3xl border border-white/16 shadow-[0_12px_36px_rgba(0,0,0,0.5)] pointer-events-auto max-w-full overflow-x-auto scrollbar-none">
+          <EffectSelector
+            selectedId={arState.selectedEffectId}
+            onSelect={selectEffect}
+          />
+        </div>
+      </div>
+
+      {/* 5. Studio Bottom Selection Dock */}
       <StudioControls
         selectedCharacterId={arState.selectedCharacterId}
         selectedEffectId={arState.selectedEffectId}

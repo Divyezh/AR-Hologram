@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { EFFECTS } from '../../data/effects';
 import { CHARACTERS } from '../../data/characters';
-import { Shield, Flame, Wand2, Bot, Play, Sliders, X } from 'lucide-react';
+import { Shield, Flame, Wand2, Bot, Play, Sliders, X, Wind } from 'lucide-react';
 import { soundManager } from '../../lib/audio/soundManager';
 
 interface StudioControlsProps {
@@ -86,6 +86,7 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
                         isSelected ? 'bg-black text-white' : 'bg-white/10 text-amber-300'
                       }`}
                     >
+                      {effect.type === 'naruto' && <Wind className="w-4 h-4 text-cyan-400" />}
                       {effect.type === 'doctor-strange' && <Shield className="w-4 h-4" />}
                       {effect.type === 'fireball' && <Flame className="w-4 h-4 text-orange-400" />}
                       {effect.type === 'vortex' && <Wand2 className="w-4 h-4 text-purple-300" />}
@@ -93,7 +94,7 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
                     <div className="flex flex-col min-w-0">
                       <span className="text-xs font-semibold truncate leading-tight">{effect.name}</span>
                       <span className={`text-[10px] truncate ${isSelected ? 'text-neutral-600' : 'text-white/40'}`}>
-                        {effect.type === 'doctor-strange' ? 'Tao Mandala' : effect.type === 'fireball' ? 'Flame Core' : 'Vortex'}
+                        {effect.type === 'naruto' ? 'Chakra Vortex' : effect.type === 'doctor-strange' ? 'Tao Mandala' : effect.type === 'fireball' ? 'Flame Core' : 'Vortex'}
                       </span>
                     </div>
                   </button>
@@ -203,14 +204,16 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
         {/* Effect Selector Button */}
         <button
           onClick={() => toggleTray('vfx')}
-          title="AR Shield / Fireball Effect"
+          title="AR Shield / Fireball / Jutsu Effect"
           className={`flex items-center gap-2 px-3.5 py-2 rounded-full transition-all duration-200 cursor-pointer ${
             activeTray === 'vfx'
               ? 'bg-white text-black shadow-sm'
               : 'hover:bg-white/10 text-white/80 hover:text-white'
           }`}
         >
-          {currentEffect.type === 'doctor-strange' ? (
+          {currentEffect.type === 'naruto' ? (
+            <Wind className="w-4 h-4 text-cyan-400" />
+          ) : currentEffect.type === 'doctor-strange' ? (
             <Shield className="w-4 h-4 text-amber-400" />
           ) : currentEffect.type === 'fireball' ? (
             <Flame className="w-4 h-4 text-orange-400" />

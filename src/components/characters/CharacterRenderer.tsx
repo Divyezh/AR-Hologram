@@ -91,6 +91,9 @@ export const CharacterRenderer: React.FC<CharacterRendererProps> = ({
       case 'holo-dragon':
         return <DragonCharacter config={config} animationName={animationName} />;
       case 'holo-crystal':
+        return <QuantumObelisk animationName={animationName} />;
+      case 'pure-vfx':
+        return null;
       default:
         return <QuantumObelisk animationName={animationName} />;
     }

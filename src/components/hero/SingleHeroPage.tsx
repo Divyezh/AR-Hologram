@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Sparkles, Shield, Flame, Play, Volume2, VolumeX, Camera, ChevronRight, Eye } from 'lucide-react';
+import { Sparkles, Shield, Flame, Play, Volume2, VolumeX, Camera, ChevronRight, Eye, Wind } from 'lucide-react';
 import { soundManager } from '../../lib/audio/soundManager';
 
 export const SingleHeroPage: React.FC = () => {
-  const [activePreset, setActivePreset] = useState<'strange' | 'fire' | 'robot'>('strange');
+  const [activePreset, setActivePreset] = useState<'naruto' | 'strange' | 'fire' | 'robot'>('naruto');
   const [isAudioMuted, setIsAudioMuted] = useState(false);
 
   const toggleSound = () => {
@@ -16,6 +16,15 @@ export const SingleHeroPage: React.FC = () => {
   };
 
   const presets = {
+    naruto: {
+      tag: 'Chakra Jutsu',
+      title: 'Naruto Rasengan',
+      subtitle: 'Spiraling Chakra Sphere',
+      desc: 'Channel the power of the legendary jutsu with real-time green-screen-removed video, spinning 3D chakra rings, and authentic anime audio.',
+      gradient: 'from-cyan-500/35 via-blue-600/25 to-transparent',
+      accent: '#00d2ff',
+      icon: <Wind className="w-4 h-4 text-cyan-300 animate-spin" style={{ animationDuration: '4s' }} />,
+    },
     strange: {
       tag: 'Tao Mandala',
       title: 'Doctor Strange',
@@ -132,14 +141,31 @@ export const SingleHeroPage: React.FC = () => {
             <ChevronRight className="w-4 h-4 text-neutral-500 group-hover:translate-x-0.5 transition-transform" />
           </Link>
 
-          {/* Preset Selector Chips (Shield, Fireball, Avatar) */}
-          <div className="flex items-center gap-2 p-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/8">
+          {/* Preset Selector Chips (Rasengan, Shield, Fireball, Avatar) */}
+          <div className="flex items-center gap-1.5 p-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/8 overflow-x-auto max-w-full">
+            <button
+              onClick={() => {
+                setActivePreset('naruto');
+                soundManager.playClick();
+                soundManager.startEffectSound('naruto');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shrink-0 cursor-pointer ${
+                activePreset === 'naruto'
+                  ? 'bg-cyan-500/25 text-white border border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.4)]'
+                  : 'text-white/60 hover:text-white hover:bg-white/6'
+              }`}
+            >
+              <Wind className="w-3.5 h-3.5 text-cyan-300" />
+              <span>Naruto Rasengan</span>
+            </button>
+
             <button
               onClick={() => {
                 setActivePreset('strange');
                 soundManager.playClick();
+                soundManager.startEffectSound('mandala');
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shrink-0 cursor-pointer ${
                 activePreset === 'strange'
                   ? 'bg-white/20 text-white shadow-sm'
                   : 'text-white/60 hover:text-white hover:bg-white/6'

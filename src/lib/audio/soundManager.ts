@@ -130,6 +130,7 @@ function generateClickSoundUri(): string {
 class ARSoundManager {
   private mandalaSound: Howl | null = null;
   private fireSound: Howl | null = null;
+  private narutoSound: Howl | null = null;
   private igniteSound: Howl | null = null;
   private clickSound: Howl | null = null;
   private isMuted: boolean = false;
@@ -150,6 +151,13 @@ class ARSoundManager {
         src: [generateFireSoundUri()],
         loop: true,
         volume: 0.65,
+      });
+
+      this.narutoSound = new Howl({
+        src: ['/audio/naruto-rasengan.mp3'],
+        loop: true,
+        volume: 0.75,
+        html5: true,
       });
 
       this.igniteSound = new Howl({
@@ -180,11 +188,15 @@ class ARSoundManager {
     this.clickSound?.play();
   }
 
-  public startEffectSound(soundType: 'mandala' | 'fire' | 'cosmic' | 'lightning') {
+  public startEffectSound(soundType: 'mandala' | 'fire' | 'cosmic' | 'lightning' | 'naruto') {
     if (this.isMuted) return;
     this.init();
 
-    const targetLoop = soundType === 'fire' ? this.fireSound : this.mandalaSound;
+    const targetLoop = soundType === 'naruto'
+      ? this.narutoSound
+      : soundType === 'fire'
+        ? this.fireSound
+        : this.mandalaSound;
 
     if (this.activeLoop === targetLoop && this.activeLoop?.playing()) {
       return;
@@ -199,7 +211,8 @@ class ARSoundManager {
     if (targetLoop) {
       targetLoop.volume(0);
       targetLoop.play();
-      targetLoop.fade(0, soundType === 'fire' ? 0.6 : 0.45, 400);
+      const targetVolume = soundType === 'naruto' ? 0.75 : soundType === 'fire' ? 0.6 : 0.45;
+      targetLoop.fade(0, targetVolume, 400);
       this.activeLoop = targetLoop;
     }
   }

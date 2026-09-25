@@ -2,6 +2,22 @@ import { EffectConfig } from '../types/effects';
 
 export const EFFECTS: EffectConfig[] = [
   {
+    id: 'naruto-rasengan',
+    name: 'Naruto Rasengan',
+    category: 'chakra',
+    type: 'naruto',
+    description: 'Swirling high-density blue Chakra sphere with authentic vortex rotation, dynamic wind threads, and real-time jutsu audio.',
+    primaryColor: '#00d2ff',
+    secondaryColor: '#2563eb',
+    glowColor: '#7dd3fc',
+    ringRadius: 0.95,
+    particleCount: 220,
+    rotationSpeed: 2.6,
+    pulseSpeed: 4.2,
+    intensity: 2.2,
+    soundType: 'naruto',
+  },
+  {
     id: 'doctor-strange',
     name: 'Doctor Strange Shield',
     category: 'arcane',
