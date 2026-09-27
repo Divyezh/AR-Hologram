@@ -75,8 +75,10 @@ export const PalmAnchorObject: React.FC<PalmAnchorObjectProps> = ({
         {/* Dynamic active VFX on palm */}
         <VFXRenderer effect={effect} particlesEnabled={particlesEnabled} />
 
-        {/* 3D Character positioned on palm */}
-        <CharacterRenderer characterId={characterId} animationName={animationName} />
+        {/* 3D Character positioned on palm (only when in character mode and NOT Naruto power) */}
+        {characterId !== 'pure-vfx' && effect.type !== 'naruto' && (
+          <CharacterRenderer characterId={characterId} animationName={animationName} />
+        )}
       </group>
     </group>
   );

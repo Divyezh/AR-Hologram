@@ -27,6 +27,7 @@ export const ARScene: React.FC<ARSceneProps> = ({
       <Canvas
         camera={THREE_CONFIG.camera}
         gl={THREE_CONFIG.gl}
+        dpr={[1, 1.5]}
         className="w-full h-full pointer-events-none"
         style={{ pointerEvents: 'none', background: 'transparent' }}
       >

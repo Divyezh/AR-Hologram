@@ -14,6 +14,8 @@ interface StudioToolbarProps {
   debugMode: boolean;
   isAudioMuted: boolean;
   hasMultipleCameras?: boolean;
+  mode?: 'palm' | 'pokemon';
+  onToggleMode?: (mode: 'palm' | 'pokemon') => void;
   onStartCamera: () => void;
   onStopCamera: () => void;
   onFlipCamera?: () => void;
@@ -31,6 +33,8 @@ export const StudioToolbar: React.FC<StudioToolbarProps> = ({
   debugMode,
   isAudioMuted,
   hasMultipleCameras,
+  mode = 'palm',
+  onToggleMode,
   onStartCamera,
   onStopCamera,
   onFlipCamera,
@@ -72,6 +76,32 @@ export const StudioToolbar: React.FC<StudioToolbarProps> = ({
           </span>
         </div>
       </div>
+
+      {/* Center: AR Mode Switcher (Palm Jutsu vs Pokémon World AR) */}
+      {onToggleMode && (
+        <div className="flex items-center p-1 rounded-full bg-black/60 backdrop-blur-2xl border border-white/16 shadow-lg pointer-events-auto">
+          <button
+            onClick={() => onToggleMode('palm')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+              mode === 'palm'
+                ? 'bg-cyan-500 text-white shadow-sm'
+                : 'text-white/60 hover:text-white hover:bg-white/8'
+            }`}
+          >
+            <span>✋ Palm Jutsu</span>
+          </button>
+          <button
+            onClick={() => onToggleMode('pokemon')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+              mode === 'pokemon'
+                ? 'bg-amber-400 text-black shadow-sm font-bold'
+                : 'text-white/60 hover:text-white hover:bg-white/8'
+            }`}
+          >
+            <span>⚡ Pikachu AR</span>
+          </button>
+        </div>
+      )}
 
       {/* Right: Sound, Camera Toggles, and Menu (Inspired by Reference 1 & 2) */}
       <div className="flex items-center gap-2 pointer-events-auto">

@@ -30,10 +30,15 @@ export function calculateRawPalmData(
   const ringMcp = landmarks[HAND_LANDMARK.RING_FINGER_MCP];
   const pinkyMcp = landmarks[HAND_LANDMARK.PINKY_MCP];
 
-  // Palm center: weighted barycenter of wrist, index MCP, middle MCP, ring MCP, pinky MCP
-  const centerX = (wrist.x * 0.2 + indexMcp.x * 0.2 + middleMcp.x * 0.2 + ringMcp.x * 0.2 + pinkyMcp.x * 0.2);
-  const centerY = (wrist.y * 0.2 + indexMcp.y * 0.2 + middleMcp.y * 0.2 + ringMcp.y * 0.2 + pinkyMcp.y * 0.2);
-  const centerZ = (wrist.z * 0.2 + indexMcp.z * 0.2 + middleMcp.z * 0.2 + ringMcp.z * 0.2 + pinkyMcp.z * 0.2);
+  // Knuckle arch center (MCP joints)
+  const knuckleX = (indexMcp.x + middleMcp.x + ringMcp.x + pinkyMcp.x) * 0.25;
+  const knuckleY = (indexMcp.y + middleMcp.y + ringMcp.y + pinkyMcp.y) * 0.25;
+  const knuckleZ = ((indexMcp.z || 0) + (middleMcp.z || 0) + (ringMcp.z || 0) + (pinkyMcp.z || 0)) * 0.25;
+
+  // True palm center: anatomical hollow of the palm (midpoint between wrist and knuckle arch)
+  const centerX = wrist.x * 0.52 + knuckleX * 0.48;
+  const centerY = wrist.y * 0.52 + knuckleY * 0.48;
+  const centerZ = (wrist.z || 0) * 0.52 + knuckleZ * 0.48;
 
   // Direction along palm from wrist to base of middle finger (Y axis pointing toward fingers)
   const vWrist = new THREE.Vector3(wrist.x, -wrist.y, -wrist.z);
@@ -94,7 +99,17 @@ export function calculateRawPalmData(
   const dx = indexMcp.x - pinkyMcp.x;
   const dy = indexMcp.y - pinkyMcp.y;
   const dz = (indexMcp.z || 0) - (pinkyMcp.z || 0);
-  const handSpan = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  const knuckleSpan = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+  // Full hand length from wrist to middle finger tip
+  const middleTip = landmarks[HAND_LANDMARK.MIDDLE_FINGER_TIP] || middleMcp;
+  const fx = middleTip.x - wrist.x;
+  const fy = middleTip.y - wrist.y;
+  const fz = (middleTip.z || 0) - (wrist.z || 0);
+  const fullHandLength = Math.sqrt(fx * fx + fy * fy + fz * fz);
+
+  // Hand span proportional to the user's complete hand size
+  const handSpan = Math.max(knuckleSpan * 1.6, fullHandLength * 0.85);
 
   return {
     center: { x: centerX, y: centerY, z: centerZ },
@@ -103,6 +118,6 @@ export function calculateRawPalmData(
     directionRight: xAxis,
     rotationEuler,
     quaternion,
-    handSpan: Math.max(0.05, Math.min(handSpan, 0.45)),
+    handSpan: Math.max(0.12, Math.min(handSpan, 0.65)),
   };
 }

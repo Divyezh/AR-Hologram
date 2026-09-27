@@ -75,8 +75,8 @@ export function computePalmAnchor(
     rawQuat.setFromEuler(euler);
   }
 
-  // Scale: base palm size normalized (roughly 0.15 is typical hand at ~50cm)
-  const baseScale = Math.max(0.4, Math.min(2.5, rawPalm.handSpan * 5.2));
+  // Scale: base hand size normalized
+  const baseScale = Math.max(0.6, Math.min(3.0, rawPalm.handSpan * 4.6));
 
   const smoothed = smoother.update(worldPos, rawQuat, baseScale);
 

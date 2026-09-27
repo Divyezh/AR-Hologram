@@ -109,36 +109,44 @@ export const AROverlay: React.FC<AROverlayProps> = ({
 
     let animId: number;
     let lastUiSync = 0;
+    let lastInferenceTime = 0;
+    // Mobile optimization: Throttle heavy MediaPipe inference to ~32 FPS (every 30ms)
+    // AnchorSmoother seamlessly lerps in 3D at 60 FPS, eliminating mobile frame drops and heating
+    const INFERENCE_INTERVAL_MS = 30;
 
     const loop = (timestamp: number) => {
       const video = videoRef.current;
       if (video && video.readyState >= 2) {
-        // Run MediaPipe frame inference
-        const trackingResult = processFrame(video, timestamp);
+        if (timestamp - lastInferenceTime >= INFERENCE_INTERVAL_MS) {
+          lastInferenceTime = timestamp;
 
-        // Update 3D Palm Anchor with coordinate mapping & smoothing
-        updateAnchor(trackingResult, dimensions);
+          // Run MediaPipe frame inference
+          const trackingResult = processFrame(video, timestamp);
 
-        // Track FPS
-        const fps = fpsTrackerRef.current.tick();
+          // Update 3D Palm Anchor with coordinate mapping & smoothing
+          updateAnchor(trackingResult, dimensions);
 
-        // Sync low-frequency debug UI (~8fps to prevent UI sluggishness)
-        if (timestamp - lastUiSync > 120) {
-          lastUiSync = timestamp;
-          setCurrentFps(fps);
+          // Track FPS
+          const fps = fpsTrackerRef.current.tick();
 
-          const primaryHand = trackingResult?.primaryHand || null;
-          const detected = !!primaryHand;
-          const handSide = primaryHand?.handedness || null;
+          // Sync low-frequency debug UI (~8fps to prevent UI sluggishness)
+          if (timestamp - lastUiSync > 120) {
+            lastUiSync = timestamp;
+            setCurrentFps(fps);
 
-          if (debugMode) {
-            setDebugLandmarks(primaryHand?.landmarks || null);
-            setDebugGesture(latestGestureRef.current);
-          } else {
-            setDebugGesture(latestGestureRef.current);
+            const primaryHand = trackingResult?.primaryHand || null;
+            const detected = !!primaryHand;
+            const handSide = primaryHand?.handedness || null;
+
+            if (debugMode) {
+              setDebugLandmarks(primaryHand?.landmarks || null);
+              setDebugGesture(latestGestureRef.current);
+            } else {
+              setDebugGesture(latestGestureRef.current);
+            }
+
+            onTelemetryUpdate(fps, latencyRef.current, detected, handSide);
           }
-
-          onTelemetryUpdate(fps, latencyRef.current, detected, handSide);
         }
       }
 

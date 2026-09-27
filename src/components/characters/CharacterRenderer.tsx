@@ -7,6 +7,7 @@ import { CHARACTERS } from '../../data/characters';
 import { RobotCharacter } from './RobotCharacter';
 import { DogCharacter } from './DogCharacter';
 import { DragonCharacter } from './DragonCharacter';
+import { PikachuModel } from '../pokemon/PikachuModel';
 import { HologramSpinner } from './CharacterLoader';
 
 interface CharacterRendererProps {
@@ -90,6 +91,8 @@ export const CharacterRenderer: React.FC<CharacterRendererProps> = ({
         return <DogCharacter config={config} animationName={animationName} />;
       case 'holo-dragon':
         return <DragonCharacter config={config} animationName={animationName} />;
+      case 'pokemon-pikachu':
+        return <PikachuModel scale={0.75} position={[0, 0, 0]} />;
       case 'holo-crystal':
         return <QuantumObelisk animationName={animationName} />;
       case 'pure-vfx':

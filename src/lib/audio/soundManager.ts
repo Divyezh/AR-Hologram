@@ -131,6 +131,7 @@ class ARSoundManager {
   private mandalaSound: Howl | null = null;
   private fireSound: Howl | null = null;
   private narutoSound: Howl | null = null;
+  private pikachuSound: Howl | null = null;
   private igniteSound: Howl | null = null;
   private clickSound: Howl | null = null;
   private isMuted: boolean = false;
@@ -156,8 +157,13 @@ class ARSoundManager {
       this.narutoSound = new Howl({
         src: ['/audio/naruto-rasengan.mp3'],
         loop: true,
-        volume: 0.75,
+        volume: 0.85,
         html5: true,
+      });
+
+      this.pikachuSound = new Howl({
+        src: ['/audio/pikachu-cry.mp3'],
+        volume: 0.9,
       });
 
       this.igniteSound = new Howl({
@@ -186,6 +192,12 @@ class ARSoundManager {
     if (this.isMuted) return;
     this.init();
     this.clickSound?.play();
+  }
+
+  public playPikachuCry() {
+    if (this.isMuted) return;
+    this.init();
+    this.pikachuSound?.play();
   }
 
   public startEffectSound(soundType: 'mandala' | 'fire' | 'cosmic' | 'lightning' | 'naruto') {

@@ -6,7 +6,7 @@ import { Sparkles, Shield, Flame, Play, Volume2, VolumeX, Camera, ChevronRight, 
 import { soundManager } from '../../lib/audio/soundManager';
 
 export const SingleHeroPage: React.FC = () => {
-  const [activePreset, setActivePreset] = useState<'naruto' | 'strange' | 'fire' | 'robot'>('naruto');
+  const [activePreset, setActivePreset] = useState<'naruto' | 'pikachu' | 'strange' | 'fire' | 'robot'>('naruto');
   const [isAudioMuted, setIsAudioMuted] = useState(false);
 
   const toggleSound = () => {
@@ -24,6 +24,15 @@ export const SingleHeroPage: React.FC = () => {
       gradient: 'from-cyan-500/35 via-blue-600/25 to-transparent',
       accent: '#00d2ff',
       icon: <Wind className="w-4 h-4 text-cyan-300 animate-spin" style={{ animationDuration: '4s' }} />,
+    },
+    pikachu: {
+      tag: 'Pokémon World AR',
+      title: 'Pikachu 3D AR',
+      subtitle: 'Wild Encounter on the Road',
+      desc: 'Encounter a live 3D Pikachu standing on the ground or street in front of you with real-time lightning shock attacks and authentic voice audio.',
+      gradient: 'from-yellow-500/35 via-amber-600/25 to-transparent',
+      accent: '#facc15',
+      icon: <Sparkles className="w-4 h-4 text-yellow-300" />,
     },
     strange: {
       tag: 'Tao Mandala',
@@ -130,14 +139,20 @@ export const SingleHeroPage: React.FC = () => {
 
           {/* Primary Action Button (Pure White Pill from Inspiration Reference) */}
           <Link
-            href="/studio"
-            onClick={() => soundManager.playIgnite()}
+            href={activePreset === 'pikachu' ? '/studio?mode=pokemon' : '/studio'}
+            onClick={() => {
+              if (activePreset === 'pikachu') {
+                soundManager.playPikachuCry();
+              } else {
+                soundManager.playIgnite();
+              }
+            }}
             className="group flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-white hover:bg-neutral-100 text-neutral-950 font-semibold text-sm sm:text-base shadow-[0_8px_30px_rgba(255,255,255,0.25)] hover:shadow-[0_10px_35px_rgba(255,255,255,0.4)] transition-all duration-300 active:scale-95 cursor-pointer mb-6"
           >
             <div className="w-5 h-5 rounded-full bg-neutral-950 flex items-center justify-center text-white">
               <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
             </div>
-            <span>Start AR Hologram</span>
+            <span>{activePreset === 'pikachu' ? 'Encounter Pikachu in AR' : 'Start AR Hologram'}</span>
             <ChevronRight className="w-4 h-4 text-neutral-500 group-hover:translate-x-0.5 transition-transform" />
           </Link>
 
@@ -157,6 +172,22 @@ export const SingleHeroPage: React.FC = () => {
             >
               <Wind className="w-3.5 h-3.5 text-cyan-300" />
               <span>Naruto Rasengan</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActivePreset('pikachu');
+                soundManager.playClick();
+                soundManager.playPikachuCry();
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shrink-0 cursor-pointer ${
+                activePreset === 'pikachu'
+                  ? 'bg-yellow-500/25 text-white border border-yellow-400/50 shadow-[0_0_12px_rgba(250,204,21,0.4)]'
+                  : 'text-white/60 hover:text-white hover:bg-white/6'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+              <span>⚡ Pikachu AR</span>
             </button>
 
             <button
