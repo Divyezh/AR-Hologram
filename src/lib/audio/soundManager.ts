@@ -127,13 +127,71 @@ function generateClickSoundUri(): string {
   return createWavDataUri(sampleRate, samples);
 }
 
+// Crystalline restaurant service desk bell
+function generateBellSoundUri(): string {
+  const sampleRate = 22050;
+  const duration = 1.2;
+  const totalSamples = Math.floor(sampleRate * duration);
+  const samples = new Float32Array(totalSamples);
+
+  for (let i = 0; i < totalSamples; i++) {
+    const t = i / sampleRate;
+    const env = Math.exp(-t * 3.5);
+    // Silver bell harmonics (fundamental ~1760Hz (A6), 2nd ~3520Hz, slight inharmonic shimmer)
+    const fund = Math.sin(2 * Math.PI * 1760 * t);
+    const harm1 = Math.sin(2 * Math.PI * 3520 * t) * 0.4;
+    const harm2 = Math.sin(2 * Math.PI * 4800 * t) * 0.15;
+    samples[i] = (fund + harm1 + harm2) * env * 0.6;
+  }
+  return createWavDataUri(sampleRate, samples);
+}
+
+// Gentle food sizzle sound
+function generateSizzleSoundUri(): string {
+  const sampleRate = 22050;
+  const duration = 1.5;
+  const totalSamples = Math.floor(sampleRate * duration);
+  const samples = new Float32Array(totalSamples);
+
+  let filter = 0;
+  for (let i = 0; i < totalSamples; i++) {
+    const t = i / sampleRate;
+    const env = Math.sin(Math.PI * (t / duration));
+    const noise = Math.random() * 2 - 1;
+    filter = filter * 0.7 + noise * 0.3;
+    samples[i] = filter * env * 0.25;
+  }
+  return createWavDataUri(sampleRate, samples);
+}
+
+// Smooth dynamic whoosh for 3D reset
+function generateWhooshSoundUri(): string {
+  const sampleRate = 22050;
+  const duration = 0.35;
+  const totalSamples = Math.floor(sampleRate * duration);
+  const samples = new Float32Array(totalSamples);
+
+  for (let i = 0; i < totalSamples; i++) {
+    const t = i / sampleRate;
+    const progress = t / duration;
+    const env = Math.sin(Math.PI * progress);
+    const freq = 180 + 350 * Math.sin(Math.PI * progress);
+    const tone = Math.sin(2 * Math.PI * freq * t);
+    const noise = (Math.random() * 2 - 1) * 0.2;
+    samples[i] = (tone * 0.5 + noise) * env * 0.5;
+  }
+  return createWavDataUri(sampleRate, samples);
+}
+
 class ARSoundManager {
   private mandalaSound: Howl | null = null;
   private fireSound: Howl | null = null;
   private narutoSound: Howl | null = null;
-  private pikachuSound: Howl | null = null;
   private igniteSound: Howl | null = null;
   private clickSound: Howl | null = null;
+  private bellSound: Howl | null = null;
+  private sizzleSound: Howl | null = null;
+  private resetSound: Howl | null = null;
   private isMuted: boolean = false;
   private isInitialized: boolean = false;
   private activeLoop: Howl | null = null;
@@ -143,9 +201,10 @@ class ARSoundManager {
 
     try {
       this.mandalaSound = new Howl({
-        src: [generateMandalaSoundUri()],
+        src: ['/audio/doctor-strange.mp3', generateMandalaSoundUri()],
         loop: true,
-        volume: 0.55,
+        volume: 0.85,
+        html5: true,
       });
 
       this.fireSound = new Howl({
@@ -161,11 +220,6 @@ class ARSoundManager {
         html5: true,
       });
 
-      this.pikachuSound = new Howl({
-        src: ['/audio/pikachu-cry.mp3'],
-        volume: 0.9,
-      });
-
       this.igniteSound = new Howl({
         src: [generateIgniteSoundUri()],
         volume: 0.8,
@@ -174,6 +228,21 @@ class ARSoundManager {
       this.clickSound = new Howl({
         src: [generateClickSoundUri()],
         volume: 0.35,
+      });
+
+      this.bellSound = new Howl({
+        src: [generateBellSoundUri()],
+        volume: 0.75,
+      });
+
+      this.sizzleSound = new Howl({
+        src: [generateSizzleSoundUri()],
+        volume: 0.45,
+      });
+
+      this.resetSound = new Howl({
+        src: [generateWhooshSoundUri()],
+        volume: 0.6,
       });
 
       this.isInitialized = true;
@@ -194,10 +263,22 @@ class ARSoundManager {
     this.clickSound?.play();
   }
 
-  public playPikachuCry() {
+  public playOrderBell() {
     if (this.isMuted) return;
     this.init();
-    this.pikachuSound?.play();
+    this.bellSound?.play();
+  }
+
+  public playSizzle() {
+    if (this.isMuted) return;
+    this.init();
+    this.sizzleSound?.play();
+  }
+
+  public playReset() {
+    if (this.isMuted) return;
+    this.init();
+    this.resetSound?.play();
   }
 
   public startEffectSound(soundType: 'mandala' | 'fire' | 'cosmic' | 'lightning' | 'naruto') {
@@ -223,7 +304,7 @@ class ARSoundManager {
     if (targetLoop) {
       targetLoop.volume(0);
       targetLoop.play();
-      const targetVolume = soundType === 'naruto' ? 0.75 : soundType === 'fire' ? 0.6 : 0.45;
+      const targetVolume = soundType === 'naruto' ? 0.75 : soundType === 'mandala' ? 0.8 : soundType === 'fire' ? 0.6 : 0.45;
       targetLoop.fade(0, targetVolume, 400);
       this.activeLoop = targetLoop;
     }

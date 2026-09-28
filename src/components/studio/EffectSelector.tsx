@@ -33,8 +33,9 @@ export const EffectSelector: React.FC<EffectSelectorProps> = ({ selectedId, onSe
       </span>
       {EFFECTS.map((effect) => {
         const isSelected = selectedId === effect.id;
+        const isStrange = effect.id === 'doctor-strange';
         const isNaruto = effect.id === 'naruto-rasengan';
-        const isSpecial = isNaruto || effect.id === 'doctor-strange' || effect.id === 'burning-fireball';
+        const isSpecial = isStrange || isNaruto || effect.id === 'burning-fireball';
 
         return (
           <button
@@ -42,23 +43,29 @@ export const EffectSelector: React.FC<EffectSelectorProps> = ({ selectedId, onSe
             onClick={() => onSelect(effect.id)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shrink-0 cursor-pointer ${
               isSelected
-                ? isNaruto
+                ? isStrange
+                  ? 'bg-neutral-900 border-2 border-amber-400 text-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.7)] scale-105'
+                  : isNaruto
                   ? 'bg-neutral-900 border-2 border-cyan-400 text-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.7)] scale-105'
-                  : 'bg-neutral-900 border-2 border-amber-400 text-white shadow-[0_0_18px_rgba(245,158,11,0.5)] scale-105'
+                  : 'bg-neutral-900 border-2 border-orange-400 text-white shadow-[0_0_18px_rgba(234,88,12,0.5)] scale-105'
+                : isStrange
+                ? 'bg-amber-950/40 hover:bg-neutral-900 text-amber-300 border border-amber-500/40 hover:border-amber-400/70'
                 : isNaruto
                 ? 'bg-cyan-950/40 hover:bg-neutral-900 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/60'
                 : 'bg-black/50 hover:bg-neutral-900 text-neutral-300 border border-white/10 hover:border-white/25'
             }`}
           >
             {getIcon(effect.type)}
-            <span className={isNaruto ? 'font-semibold' : ''}>{effect.name}</span>
+            <span className={isStrange || isNaruto ? 'font-semibold' : ''}>{effect.name}</span>
             {isSpecial && (
               <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-semibold border ${
-                isNaruto
+                isStrange
+                  ? 'bg-amber-500/25 text-amber-300 border-amber-400/50 animate-pulse'
+                  : isNaruto
                   ? 'bg-cyan-500/25 text-cyan-300 border-cyan-400/50 animate-pulse'
-                  : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                  : 'bg-orange-500/20 text-orange-300 border-orange-500/30'
               }`}>
-                {isNaruto ? 'JUTSU' : 'NEW'}
+                {isStrange ? 'TAO MANDALA' : isNaruto ? 'JUTSU' : 'NEW'}
               </span>
             )}
           </button>

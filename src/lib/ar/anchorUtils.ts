@@ -17,6 +17,8 @@ export function createDefaultPalmAnchor(): PalmAnchor {
     rawCenter: { x: 0.5, y: 0.5, z: 0 },
     handSize: 0.2,
     handedness: null,
+    isPalmFacing: false,
+    palmFacingScore: 0,
     eulerDegrees: { pitch: 0, roll: 0, yaw: 0 },
   };
 }
@@ -42,6 +44,8 @@ export function computePalmAnchor(
       rawCenter: { x: 0.5, y: 0.5, z: 0 },
       handSize: 0.2,
       handedness,
+      isPalmFacing: false,
+      palmFacingScore: 0,
       eulerDegrees: {
         pitch: (smoothed.rotation[0] * 180) / Math.PI,
         roll: (smoothed.rotation[1] * 180) / Math.PI,
@@ -50,7 +54,16 @@ export function computePalmAnchor(
     };
   }
 
-  const rawPalm = calculateRawPalmData(landmarks, handedness);
+  // When camera is mirrored (selfie mode), MediaPipe's raw handedness from unmirrored sensor image is inverted
+  const effectiveHandedness: Handedness | null = handedness
+    ? dimensions.isMirrored
+      ? handedness === 'Left'
+        ? 'Right'
+        : 'Left'
+      : handedness
+    : 'Right';
+
+  const rawPalm = calculateRawPalmData(landmarks, effectiveHandedness);
   if (!rawPalm) {
     const smoothed = smoother.update(null, null, null);
     return {
@@ -95,6 +108,8 @@ export function computePalmAnchor(
     rawCenter: rawPalm.center,
     handSize: rawPalm.handSpan,
     handedness,
+    isPalmFacing: rawPalm.isPalmFacing,
+    palmFacingScore: rawPalm.palmFacingScore,
     eulerDegrees: { pitch: pitchDeg, roll: rollDeg, yaw: yawDeg },
   };
 }

@@ -135,7 +135,7 @@ export const AROverlay: React.FC<AROverlayProps> = ({
             setCurrentFps(fps);
 
             const primaryHand = trackingResult?.primaryHand || null;
-            const detected = !!primaryHand;
+            const detected = !!primaryHand && anchorRef.current.isPalmFacing;
             const handSide = primaryHand?.handedness || null;
 
             if (debugMode) {

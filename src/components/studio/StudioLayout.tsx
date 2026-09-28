@@ -14,7 +14,6 @@ import { StudioToolbar } from './StudioToolbar';
 import { StudioControls } from './StudioControls';
 import { EffectSelector } from './EffectSelector';
 import { DebugPanel } from './DebugPanel';
-import { PokemonWorldAR } from '../pokemon/PokemonWorldAR';
 import { EFFECTS } from '../../data/effects';
 import { soundManager } from '../../lib/audio/soundManager';
 
@@ -66,17 +65,6 @@ export const StudioLayout: React.FC = () => {
   } = useARState();
 
   const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(false);
-  const [studioMode, setStudioMode] = useState<'palm' | 'pokemon'>('palm');
-
-  // Support direct URL navigation to Pokemon mode (?mode=pokemon)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('mode') === 'pokemon') {
-        setStudioMode('pokemon');
-      }
-    }
-  }, []);
 
   // Sync tracking readiness to AR state
   useEffect(() => {
@@ -119,9 +107,7 @@ export const StudioLayout: React.FC = () => {
     startCamera();
   }, [startCamera]);
 
-  if (studioMode === 'pokemon') {
-    return <PokemonWorldAR onBackToStudio={() => setStudioMode('palm')} />;
-  }
+
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
@@ -164,8 +150,6 @@ export const StudioLayout: React.FC = () => {
         debugMode={arState.debugMode}
         isAudioMuted={isAudioMuted}
         hasMultipleCameras={devices.length > 1}
-        mode={studioMode}
-        onToggleMode={setStudioMode}
         onStartCamera={handleStartCamera}
         onStopCamera={stopCamera}
         onFlipCamera={toggleFacingMode}

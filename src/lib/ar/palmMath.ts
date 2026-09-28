@@ -10,6 +10,8 @@ export interface RawPalmData {
   rotationEuler: THREE.Euler;
   quaternion: THREE.Quaternion;
   handSpan: number;
+  isPalmFacing: boolean;
+  palmFacingScore: number;
 }
 
 /**
@@ -111,6 +113,12 @@ export function calculateRawPalmData(
   // Hand span proportional to the user's complete hand size
   const handSpan = Math.max(knuckleSpan * 1.6, fullHandLength * 0.85);
 
+  // Normal vector points out of the palm face towards camera.
+  // vNormal.z > 0 means palm is facing camera (+Z).
+  // vNormal.z < 0 means knuckles / back of hand is facing camera (-Z).
+  const palmFacingScore = vNormal.z;
+  const isPalmFacing = palmFacingScore > -0.2;
+
   return {
     center: { x: centerX, y: centerY, z: centerZ },
     normal: vNormal,
@@ -119,5 +127,7 @@ export function calculateRawPalmData(
     rotationEuler,
     quaternion,
     handSpan: Math.max(0.12, Math.min(handSpan, 0.65)),
+    isPalmFacing,
+    palmFacingScore,
   };
 }

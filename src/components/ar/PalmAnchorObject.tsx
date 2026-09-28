@@ -31,8 +31,10 @@ export const PalmAnchorObject: React.FC<PalmAnchorObjectProps> = ({
     const anchor = anchorRef.current;
 
     // Smooth entry and exit scale animation
-    const targetVisScale = anchor.detected ? anchor.scale : 0;
-    visualScaleRef.current += (targetVisScale - visualScaleRef.current) * Math.min(1, delta * 12);
+    // ONLY display effect when hand is detected AND palm is facing the camera (not knuckle side)
+    const isShowing = anchor.detected && anchor.isPalmFacing;
+    const targetVisScale = isShowing ? anchor.scale : 0;
+    visualScaleRef.current += (targetVisScale - visualScaleRef.current) * Math.min(1, delta * 14);
 
     if (visualScaleRef.current < 0.01) {
       rootGroupRef.current.visible = false;
@@ -75,8 +77,8 @@ export const PalmAnchorObject: React.FC<PalmAnchorObjectProps> = ({
         {/* Dynamic active VFX on palm */}
         <VFXRenderer effect={effect} particlesEnabled={particlesEnabled} />
 
-        {/* 3D Character positioned on palm (only when in character mode and NOT Naruto power) */}
-        {characterId !== 'pure-vfx' && effect.type !== 'naruto' && (
+        {/* 3D Character positioned on palm (only when in character mode and NOT power effects) */}
+        {characterId !== 'pure-vfx' && effect.type !== 'naruto' && effect.type !== 'doctor-strange' && (
           <CharacterRenderer characterId={characterId} animationName={animationName} />
         )}
       </group>

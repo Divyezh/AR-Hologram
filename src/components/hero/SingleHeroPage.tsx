@@ -6,7 +6,7 @@ import { Sparkles, Shield, Flame, Play, Volume2, VolumeX, Camera, ChevronRight, 
 import { soundManager } from '../../lib/audio/soundManager';
 
 export const SingleHeroPage: React.FC = () => {
-  const [activePreset, setActivePreset] = useState<'naruto' | 'pikachu' | 'strange' | 'fire' | 'robot'>('naruto');
+  const [activePreset, setActivePreset] = useState<'strange' | 'naruto' | 'fire' | 'robot'>('strange');
   const [isAudioMuted, setIsAudioMuted] = useState(false);
 
   const toggleSound = () => {
@@ -16,6 +16,15 @@ export const SingleHeroPage: React.FC = () => {
   };
 
   const presets = {
+    strange: {
+      tag: 'Tao Mandala',
+      title: 'Doctor Strange',
+      subtitle: 'Sorcerer Supreme Shield',
+      desc: 'Summon the Sorcerer Supreme mystic Tao Mandala shield upon your palm with authentic video runes, pitch-black background removal, and blazing eldritch pyrotechnics.',
+      gradient: 'from-amber-600/35 via-orange-600/25 to-transparent',
+      accent: '#f59e0b',
+      icon: <Shield className="w-4 h-4 text-amber-300" />,
+    },
     naruto: {
       tag: 'Chakra Jutsu',
       title: 'Naruto Rasengan',
@@ -25,24 +34,7 @@ export const SingleHeroPage: React.FC = () => {
       accent: '#00d2ff',
       icon: <Wind className="w-4 h-4 text-cyan-300 animate-spin" style={{ animationDuration: '4s' }} />,
     },
-    pikachu: {
-      tag: 'Pokémon World AR',
-      title: 'Pikachu 3D AR',
-      subtitle: 'Wild Encounter on the Road',
-      desc: 'Encounter a live 3D Pikachu standing on the ground or street in front of you with real-time lightning shock attacks and authentic voice audio.',
-      gradient: 'from-yellow-500/35 via-amber-600/25 to-transparent',
-      accent: '#facc15',
-      icon: <Sparkles className="w-4 h-4 text-yellow-300" />,
-    },
-    strange: {
-      tag: 'Tao Mandala',
-      title: 'Doctor Strange',
-      subtitle: 'Eldritch Shield',
-      desc: 'Summon the Sorcerer Supreme mystic mandala upon your palm with counter-rotating sacred octagrams and fiery sparks.',
-      gradient: 'from-amber-600/30 via-orange-600/20 to-transparent',
-      accent: '#f59e0b',
-      icon: <Shield className="w-4 h-4 text-amber-300" />,
-    },
+
     fire: {
       tag: 'Pyromancy Core',
       title: 'Burning Fireball',
@@ -101,6 +93,15 @@ export const SingleHeroPage: React.FC = () => {
 
         {/* Right Audio & Actions */}
         <div className="flex items-center gap-2">
+          <Link
+            href="/restaurant"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/35 text-amber-300 text-xs font-bold transition-all shadow-sm"
+          >
+            <span>🍽️</span>
+            <span className="hidden sm:inline">AR Dining</span>
+            <span>₹249</span>
+          </Link>
+
           <button
             onClick={toggleSound}
             title={isAudioMuted ? 'Unmute Audio' : 'Mute Audio'}
@@ -137,27 +138,53 @@ export const SingleHeroPage: React.FC = () => {
             {current.desc}
           </p>
 
-          {/* Primary Action Button (Pure White Pill from Inspiration Reference) */}
-          <Link
-            href={activePreset === 'pikachu' ? '/studio?mode=pokemon' : '/studio'}
-            onClick={() => {
-              if (activePreset === 'pikachu') {
-                soundManager.playPikachuCry();
-              } else {
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full justify-center mb-6">
+            <Link
+              href="/studio"
+              onClick={() => {
                 soundManager.playIgnite();
-              }
-            }}
-            className="group flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-white hover:bg-neutral-100 text-neutral-950 font-semibold text-sm sm:text-base shadow-[0_8px_30px_rgba(255,255,255,0.25)] hover:shadow-[0_10px_35px_rgba(255,255,255,0.4)] transition-all duration-300 active:scale-95 cursor-pointer mb-6"
-          >
-            <div className="w-5 h-5 rounded-full bg-neutral-950 flex items-center justify-center text-white">
-              <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
-            </div>
-            <span>{activePreset === 'pikachu' ? 'Encounter Pikachu in AR' : 'Start AR Hologram'}</span>
-            <ChevronRight className="w-4 h-4 text-neutral-500 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
+              }}
+              className="group flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-white hover:bg-neutral-100 text-neutral-950 font-semibold text-sm sm:text-base shadow-[0_8px_30px_rgba(255,255,255,0.25)] hover:shadow-[0_10px_35px_rgba(255,255,255,0.4)] transition-all duration-300 active:scale-95 cursor-pointer w-full sm:w-auto"
+            >
+              <div className="w-5 h-5 rounded-full bg-neutral-950 flex items-center justify-center text-white">
+                <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
+              </div>
+              <span>Start AR Hologram</span>
+              <ChevronRight className="w-4 h-4 text-neutral-500 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+
+            <Link
+              href="/restaurant"
+              onClick={() => {
+                soundManager.playSizzle();
+              }}
+              className="group flex items-center justify-center gap-2.5 px-6 py-4 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-sm sm:text-base shadow-[0_8px_25px_rgba(245,158,11,0.2)] transition-all duration-300 active:scale-95 cursor-pointer w-full sm:w-auto"
+            >
+              <span>🍽️</span>
+              <span>AR Restaurant (Burger ₹249)</span>
+              <ChevronRight className="w-4 h-4 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
 
           {/* Preset Selector Chips (Rasengan, Shield, Fireball, Avatar) */}
           <div className="flex items-center gap-1.5 p-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/8 overflow-x-auto max-w-full">
+            <button
+              onClick={() => {
+                setActivePreset('strange');
+                soundManager.playClick();
+                soundManager.startEffectSound('mandala');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shrink-0 cursor-pointer ${
+                activePreset === 'strange'
+                  ? 'bg-amber-500/25 text-white border border-amber-400/50 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+                  : 'text-white/60 hover:text-white hover:bg-white/6'
+              }`}
+            >
+              <Shield className="w-3.5 h-3.5 text-amber-300" />
+              <span>Doctor Strange</span>
+            </button>
+
             <button
               onClick={() => {
                 setActivePreset('naruto');
@@ -174,37 +201,7 @@ export const SingleHeroPage: React.FC = () => {
               <span>Naruto Rasengan</span>
             </button>
 
-            <button
-              onClick={() => {
-                setActivePreset('pikachu');
-                soundManager.playClick();
-                soundManager.playPikachuCry();
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shrink-0 cursor-pointer ${
-                activePreset === 'pikachu'
-                  ? 'bg-yellow-500/25 text-white border border-yellow-400/50 shadow-[0_0_12px_rgba(250,204,21,0.4)]'
-                  : 'text-white/60 hover:text-white hover:bg-white/6'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
-              <span>⚡ Pikachu AR</span>
-            </button>
 
-            <button
-              onClick={() => {
-                setActivePreset('strange');
-                soundManager.playClick();
-                soundManager.startEffectSound('mandala');
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shrink-0 cursor-pointer ${
-                activePreset === 'strange'
-                  ? 'bg-white/20 text-white shadow-sm'
-                  : 'text-white/60 hover:text-white hover:bg-white/6'
-              }`}
-            >
-              <Shield className="w-3.5 h-3.5 text-amber-300" />
-              <span>Doctor Strange</span>
-            </button>
 
             <button
               onClick={() => {
@@ -249,6 +246,14 @@ export const SingleHeroPage: React.FC = () => {
 
         {/* Center / Right Quick Action Dock */}
         <div className="flex items-center gap-3 p-1.5 rounded-full bg-white/6 backdrop-blur-2xl border border-white/12 shadow-lg">
+          <Link
+            href="/restaurant"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs shadow-sm transition-colors"
+          >
+            <span>🍽️</span>
+            <span>AR Dining</span>
+          </Link>
+
           <Link
             href="/studio"
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black font-semibold text-xs shadow-sm hover:bg-white/90 transition-colors"

@@ -20,6 +20,10 @@ export interface PalmAnchor {
   handSize: number;
   /** Left or right hand */
   handedness: Handedness | null;
+  /** True when palm is facing the camera, false when knuckle/back of hand is facing camera */
+  isPalmFacing: boolean;
+  /** Direction score towards camera: > 0 for palm side, < 0 for knuckle side */
+  palmFacingScore: number;
   /** Pitch, Roll, Yaw in degrees */
   eulerDegrees: { pitch: number; roll: number; yaw: number };
 }
