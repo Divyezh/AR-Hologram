@@ -11,7 +11,7 @@ interface RoadSurfaceScannerProps {
 }
 
 export const RoadSurfaceScanner: React.FC<RoadSurfaceScannerProps> = ({
-  position = [0, -1.09, -2.5],
+  position = [0, -1.24, -3.2],
   isDetected = false,
   confidence = 0.5,
 }) => {

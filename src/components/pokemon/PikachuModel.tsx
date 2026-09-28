@@ -12,14 +12,16 @@ interface PikachuModelProps {
   position?: [number, number, number];
   rotation?: [number, number, number];
   isSpawned?: boolean;
+  visible?: boolean;
   onInteract?: () => void;
 }
 
 export const PikachuModel: React.FC<PikachuModelProps> = ({
-  scale = 1.5,
-  position = [0, -1.1, -2.5],
+  scale = 0.55, // Size of a 5-year-old child (~1.10m tall)
+  position = [0, -1.15, -2.6],
   rotation = [0, 0, 0],
   isSpawned = true,
+  visible = true,
   onInteract,
 }) => {
   const rootGroupRef = useRef<THREE.Group | null>(null);
@@ -30,14 +32,14 @@ export const PikachuModel: React.FC<PikachuModelProps> = ({
   const [isAttacking, setIsAttacking] = useState(false);
   const [sparksActive, setSparksActive] = useState(false);
 
-  // Position interpolation for buttery smooth movement on the road
+  // Position interpolation for buttery smooth movement on the road / land
   const currentPosRef = useRef<THREE.Vector3>(new THREE.Vector3(...position));
   const currentRotYRef = useRef<number>(rotation[1]);
   const isHoppingRef = useRef<boolean>(false);
   const hopProgressRef = useRef<number>(1);
 
-  // Spawn animation state
-  const spawnScaleRef = useRef<number>(0);
+  // Spawn scale animation (initialized to full scale for immediate visibility)
+  const spawnScaleRef = useRef<number>(scale);
   const hasTriggeredSpawnSound = useRef<boolean>(false);
 
   const { scene, animations } = useGLTF('/models/pokemon/pikachu.glb');
@@ -53,8 +55,8 @@ export const PikachuModel: React.FC<PikachuModelProps> = ({
     const ctx = canvas.getContext('2d');
     if (ctx) {
       const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 56);
-      grad.addColorStop(0, 'rgba(0, 0, 0, 0.9)');
-      grad.addColorStop(0.3, 'rgba(0, 0, 0, 0.7)');
+      grad.addColorStop(0, 'rgba(0, 0, 0, 0.95)');
+      grad.addColorStop(0.35, 'rgba(0, 0, 0, 0.7)');
       grad.addColorStop(0.7, 'rgba(0, 0, 0, 0.25)');
       grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = grad;
@@ -72,8 +74,8 @@ export const PikachuModel: React.FC<PikachuModelProps> = ({
     const ctx = canvas.getContext('2d');
     if (ctx) {
       const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 62);
-      grad.addColorStop(0, 'rgba(10, 15, 25, 0.45)');
-      grad.addColorStop(0.5, 'rgba(10, 15, 25, 0.2)');
+      grad.addColorStop(0, 'rgba(10, 15, 25, 0.55)');
+      grad.addColorStop(0.5, 'rgba(10, 15, 25, 0.25)');
       grad.addColorStop(1, 'rgba(10, 15, 25, 0)');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 128, 128);
@@ -82,18 +84,18 @@ export const PikachuModel: React.FC<PikachuModelProps> = ({
   }, []);
 
   // Electric spark particles for Thunderbolt attack & spawn burst
-  const sparkCount = 40;
+  const sparkCount = 45;
   const sparkPositions = useMemo(() => {
     const pos = new Float32Array(sparkCount * 3);
     for (let i = 0; i < sparkCount; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 1.4;
-      pos[i * 3 + 1] = Math.random() * 1.3;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 1.4;
+      pos[i * 3] = (Math.random() - 0.5) * 1.5;
+      pos[i * 3 + 1] = Math.random() * 1.6;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 1.5;
     }
     return pos;
   }, [sparkCount]);
 
-  // Handle tap / click attack
+  // Handle tap / attack trigger
   const triggerAttack = () => {
     if (isAttacking) return;
     setIsAttacking(true);
@@ -103,7 +105,7 @@ export const PikachuModel: React.FC<PikachuModelProps> = ({
 
     if (actions && actions['Impactrueno']) {
       const action = actions['Impactrueno'];
-      action.reset().fadeIn(0.12).setLoop(THREE.LoopOnce, 1).play();
+      action.reset().fadeIn(0.1).setLoop(THREE.LoopOnce, 1).play();
       action.clampWhenFinished = true;
     }
 
@@ -122,24 +124,30 @@ export const PikachuModel: React.FC<PikachuModelProps> = ({
 
   // Play spawn sound on first appearance
   useEffect(() => {
-    if (isSpawned && !hasTriggeredSpawnSound.current) {
+    if (isSpawned && visible && !hasTriggeredSpawnSound.current) {
       hasTriggeredSpawnSound.current = true;
       setSparksActive(true);
       soundManager.playPikachuCry();
       setTimeout(() => setSparksActive(false), 1200);
     }
-  }, [isSpawned]);
+  }, [isSpawned, visible]);
 
   // Frame loop: smooth position interpolation, hop physics, and idle breathing
   useFrame((state, delta) => {
     const t = state.clock.getElapsedTime();
     const targetVec = new THREE.Vector3(...position);
 
-    // 1. Smooth spawn scale bounce
-    if (isSpawned) {
-      spawnScaleRef.current = THREE.MathUtils.damp(spawnScaleRef.current, scale, 6.0, delta);
-    } else {
-      spawnScaleRef.current = THREE.MathUtils.damp(spawnScaleRef.current, 0, 8.0, delta);
+    // 1. Smooth spawn scale bounce & camera disappearance
+    // If not visible (camera moved away from surface) or not spawned: damp to 0
+    const targetScale = isSpawned && visible ? scale : 0;
+    spawnScaleRef.current = THREE.MathUtils.damp(spawnScaleRef.current, targetScale, 7.0, delta);
+
+    if (rootGroupRef.current) {
+      if (spawnScaleRef.current < 0.002) {
+        rootGroupRef.current.visible = false;
+        return;
+      }
+      rootGroupRef.current.visible = true;
     }
 
     // 2. Smooth movement to target road position (lerp/damp)
@@ -184,10 +192,10 @@ export const PikachuModel: React.FC<PikachuModelProps> = ({
     if (meshGroupRef.current) {
       if (!isAttacking && !isHoppingRef.current) {
         meshGroupRef.current.position.y = Math.sin(t * 3.0) * 0.02;
-        meshGroupRef.current.rotation.z = Math.sin(t * 1.5) * 0.02;
+        meshGroupRef.current.rotation.z = Math.sin(t * 1.5) * 0.015;
       } else if (isAttacking) {
-        meshGroupRef.current.position.y = (Math.random() - 0.5) * 0.035;
-        meshGroupRef.current.position.x = (Math.random() - 0.5) * 0.035;
+        meshGroupRef.current.position.y = (Math.random() - 0.5) * 0.04;
+        meshGroupRef.current.position.x = (Math.random() - 0.5) * 0.04;
       }
     }
 
@@ -209,22 +217,22 @@ export const PikachuModel: React.FC<PikachuModelProps> = ({
 
   return (
     <group ref={rootGroupRef}>
-      {/* 1. Double-Layer Ground Contact Shadow on the Road Surface */}
-      <group position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* 1. Double-Layer Ground Contact Shadow directly under feet on the Surface */}
+      <group position={[0, 0.008, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         {/* Layer A: Sharp Ambient Occlusion directly under feet */}
         <mesh ref={shadowContactRef} position={[0, 0, 0.002]}>
           <planeGeometry args={[1.1, 1.1]} />
           <meshBasicMaterial
             map={contactShadowTexture || undefined}
             transparent
-            opacity={0.8}
+            opacity={0.85}
             depthWrite={false}
           />
         </mesh>
 
         {/* Layer B: Diffuse Soft Sun Shadow on Road Pavement */}
-        <mesh ref={shadowDiffuseRef} position={[0.1, -0.15, 0.001]}>
-          <planeGeometry args={[1.6, 1.6]} />
+        <mesh ref={shadowDiffuseRef} position={[0.08, -0.12, 0.001]}>
+          <planeGeometry args={[1.5, 1.5]} />
           <meshBasicMaterial
             map={diffuseShadowTexture || undefined}
             transparent
@@ -234,7 +242,7 @@ export const PikachuModel: React.FC<PikachuModelProps> = ({
         </mesh>
       </group>
 
-      {/* 2. Interactive 3D Pikachu Character Model */}
+      {/* 2. Interactive 3D Pikachu Character Model (Rotated -90° on X to stand upright on feet) */}
       <group
         ref={meshGroupRef}
         onClick={(e) => {
@@ -247,13 +255,15 @@ export const PikachuModel: React.FC<PikachuModelProps> = ({
         }}
       >
         <Center bottom>
-          <primitive object={clonedScene} />
+          <group rotation={[-Math.PI / 2, 0, 0]}>
+            <primitive object={clonedScene} />
+          </group>
         </Center>
       </group>
 
       {/* 3. Electric Spark Particles for Thunder Shock / Landing */}
       {sparksActive && (
-        <points position={[0, 0.4, 0]}>
+        <points position={[0, 0.6, 0]}>
           <bufferGeometry>
             <bufferAttribute
               attach="attributes-position"
@@ -261,7 +271,7 @@ export const PikachuModel: React.FC<PikachuModelProps> = ({
             />
           </bufferGeometry>
           <pointsMaterial
-            size={0.065}
+            size={0.07}
             color="#fef08a"
             transparent
             opacity={0.95}
@@ -274,9 +284,9 @@ export const PikachuModel: React.FC<PikachuModelProps> = ({
       {/* 4. Local Dynamic Lighting for Electric Shock Burst */}
       {isAttacking && (
         <pointLight
-          position={[0, 0.6, 0.2]}
-          intensity={8}
-          distance={3.5}
+          position={[0, 0.8, 0.3]}
+          intensity={10}
+          distance={4}
           color="#facc15"
         />
       )}

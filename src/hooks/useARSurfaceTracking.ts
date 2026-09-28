@@ -3,38 +3,89 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 
+export type SurfaceType = 'desk' | 'road';
+
 export interface ARSurfaceTrackingState {
   scanStatus: 'scanning' | 'locked';
   hasGyro: boolean;
   isTiltTowardsRoad: boolean;
   roadAnchor: [number, number, number];
   targetPosition: [number, number, number];
-  cameraRotation: [number, number, number]; // pitch, yaw, roll in radians for Three.js
-  surfaceConfidence: number; // 0 to 1
+  cameraRotation: [number, number, number];
+  surfaceConfidence: number;
+  isPikachuVisible: boolean;
+  offscreenDirection: 'none' | 'left' | 'right' | 'up' | 'down';
+  surfaceType: SurfaceType;
+  setSurfaceType: (type: SurfaceType) => void;
   requestGyroPermission: () => Promise<boolean>;
   placeOnRoad: (clientX: number, clientY: number, containerRect: DOMRect) => [number, number, number];
+  setManualRotation: (deltaPitch: number, deltaYaw: number) => void;
   rescanRoad: () => void;
   confirmSpawn: () => void;
 }
 
-const DEFAULT_ROAD_HEIGHT = -1.1; // Ground plane height relative to camera
-const DEFAULT_INITIAL_POS: [number, number, number] = [0, DEFAULT_ROAD_HEIGHT, -2.5];
+// Preset heights for different real-world surfaces
+const SURFACE_PRESETS = {
+  desk: {
+    height: -0.45, // Desk level relative to eye/webcam (~45cm below)
+    distance: 1.5, // 1.5m distance in front
+    initialPos: [0.3, -0.45, -1.5] as [number, number, number],
+    initialPitch: -0.15, // ~8 deg down towards desk
+  },
+  road: {
+    height: -1.15, // Ground / road level (~1.15m below)
+    distance: 2.5, // 2.5m distance ahead
+    initialPos: [0, -1.15, -2.5] as [number, number, number],
+    initialPitch: -0.22, // ~12 deg down towards road
+  },
+};
 
-export function useARSurfaceTracking(initialAutoPlaceDelayMs: number = 1800): ARSurfaceTrackingState {
-  const [scanStatus, setScanStatus] = useState<'scanning' | 'locked'>('scanning');
+export function useARSurfaceTracking(
+  initialAutoPlaceDelayMs: number = 1200,
+  defaultSurface: SurfaceType = 'desk'
+): ARSurfaceTrackingState {
+  const [surfaceType, setSurfaceTypeState] = useState<SurfaceType>(defaultSurface);
+  const [scanStatus, setScanStatus] = useState<'scanning' | 'locked'>('locked'); // Always locked & visible on mount
   const [hasGyro, setHasGyro] = useState<boolean>(false);
-  const [isTiltTowardsRoad, setIsTiltTowardsRoad] = useState<boolean>(false);
-  const [surfaceConfidence, setSurfaceConfidence] = useState<number>(0.2);
+  const [isTiltTowardsRoad, setIsTiltTowardsRoad] = useState<boolean>(true);
+  const [surfaceConfidence, setSurfaceConfidence] = useState<number>(1.0);
 
-  // Road anchor in 3D world space
-  const [roadAnchor, setRoadAnchor] = useState<[number, number, number]>(DEFAULT_INITIAL_POS);
-  const [targetPosition, setTargetPosition] = useState<[number, number, number]>(DEFAULT_INITIAL_POS);
-  const [cameraRotation, setCameraRotation] = useState<[number, number, number]>([0, 0, 0]);
+  const activePreset = SURFACE_PRESETS[surfaceType];
+
+  // Fixed 3D world anchor for Pikachu
+  const [roadAnchor, setRoadAnchor] = useState<[number, number, number]>(activePreset.initialPos);
+  const [targetPosition, setTargetPosition] = useState<[number, number, number]>(activePreset.initialPos);
+  const [cameraRotation, setCameraRotation] = useState<[number, number, number]>([
+    activePreset.initialPitch,
+    0,
+    0,
+  ]);
+
+  // Visibility and off-screen detection: default TRUE
+  const [isPikachuVisible, setIsPikachuVisible] = useState<boolean>(true);
+  const [offscreenDirection, setOffscreenDirection] = useState<'none' | 'left' | 'right' | 'up' | 'down'>('none');
 
   // Motion smoothing refs
-  const smoothEulerRef = useRef<{ pitch: number; yaw: number; roll: number }>({ pitch: 0, yaw: 0, roll: 0 });
+  const smoothEulerRef = useRef<{ pitch: number; yaw: number; roll: number }>({
+    pitch: activePreset.initialPitch,
+    yaw: 0,
+    roll: 0,
+  });
   const initialAlphaRef = useRef<number | null>(null);
+  const manualOffsetRef = useRef<{ pitch: number; yaw: number }>({ pitch: 0, yaw: 0 });
   const scanTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Switch surface type (Desk vs Road/Floor)
+  const setSurfaceType = useCallback((type: SurfaceType) => {
+    setSurfaceTypeState(type);
+    const preset = SURFACE_PRESETS[type];
+    setRoadAnchor(preset.initialPos);
+    setTargetPosition(preset.initialPos);
+    smoothEulerRef.current.pitch = preset.initialPitch;
+    setCameraRotation([preset.initialPitch, smoothEulerRef.current.yaw, 0]);
+    setIsPikachuVisible(true);
+    setOffscreenDirection('none');
+  }, []);
 
   // Request gyroscope permission for iOS 13+ devices
   const requestGyroPermission = useCallback(async (): Promise<boolean> => {
@@ -53,98 +104,127 @@ export function useARSurfaceTracking(initialAutoPlaceDelayMs: number = 1800): AR
     return true;
   }, []);
 
-  // Raycast screen coordinates to horizontal road plane (Y = DEFAULT_ROAD_HEIGHT)
+  // Place Pikachu directly where the user clicks or taps on the screen / surface!
   const placeOnRoad = useCallback(
     (clientX: number, clientY: number, containerRect: DOMRect): [number, number, number] => {
       const ndcX = ((clientX - containerRect.left) / containerRect.width) * 2 - 1;
       const ndcY = -(((clientY - containerRect.top) / containerRect.height) * 2 - 1);
 
-      // Camera FOV 50 deg, aspect ratio
       const aspect = containerRect.width / containerRect.height;
       const fovRad = (50 * Math.PI) / 180;
-      const vFOV = 2 * Math.tan(fovRad / 2);
+      const halfFOV = Math.tan(fovRad / 2);
 
-      // Ray direction in camera local space
-      const rayDir = new THREE.Vector3(
-        (ndcX * (vFOV * aspect)) / 2,
-        (ndcY * vFOV) / 2,
-        -1
-      ).normalize();
+      const currentDistance = surfaceType === 'desk' ? 1.5 : 2.5;
+      const currentHeight = surfaceType === 'desk' ? -0.45 : -1.15;
 
-      // Apply current camera tilt/rotation
-      const euler = new THREE.Euler(
-        smoothEulerRef.current.pitch,
-        smoothEulerRef.current.yaw,
-        0,
-        'YXZ'
+      // Direct ray mapping: clicking on the screen projects Pikachu right at that screen location!
+      const targetWorldX = ndcX * halfFOV * aspect * currentDistance;
+      const targetWorldY = THREE.MathUtils.clamp(
+        ndcY * halfFOV * currentDistance,
+        currentHeight - 0.25,
+        currentHeight + 0.35
       );
-      rayDir.applyEuler(euler);
+      const targetWorldZ = -currentDistance;
 
-      // Intersect with horizontal road plane Y = DEFAULT_ROAD_HEIGHT
-      // Ray: P = O + t * D. We want P.y = DEFAULT_ROAD_HEIGHT.
-      // 0 + t * rayDir.y = DEFAULT_ROAD_HEIGHT => t = DEFAULT_ROAD_HEIGHT / rayDir.y
-      let worldX = 0;
-      let worldZ = -2.5;
-
-      if (rayDir.y < -0.05) {
-        const t = DEFAULT_ROAD_HEIGHT / rayDir.y;
-        worldX = Math.max(-2.5, Math.min(2.5, rayDir.x * t));
-        worldZ = Math.max(-5.5, Math.min(-1.3, rayDir.z * t));
-      } else {
-        // Fallback for near-horizon taps
-        worldX = Math.max(-2.0, Math.min(2.0, ndcX * 2.0));
-        worldZ = Math.max(-4.5, Math.min(-1.8, -2.5 - (ndcY + 0.3) * 1.8));
-      }
-
-      const newPos: [number, number, number] = [worldX, DEFAULT_ROAD_HEIGHT, worldZ];
+      const newPos: [number, number, number] = [targetWorldX, targetWorldY, targetWorldZ];
       setRoadAnchor(newPos);
       setTargetPosition(newPos);
       setScanStatus('locked');
       setSurfaceConfidence(1.0);
+      setIsPikachuVisible(true);
+      setOffscreenDirection('none');
       return newPos;
     },
-    []
+    [surfaceType]
   );
+
+  // Manual drag support (desktop or finger pan)
+  const setManualRotation = useCallback((deltaPitch: number, deltaYaw: number) => {
+    manualOffsetRef.current.pitch = Math.max(-1.4, Math.min(0.7, manualOffsetRef.current.pitch + deltaPitch));
+    manualOffsetRef.current.yaw += deltaYaw;
+  }, []);
 
   const confirmSpawn = useCallback(() => {
     setScanStatus('locked');
     setSurfaceConfidence(1.0);
+    setIsPikachuVisible(true);
   }, []);
 
   const rescanRoad = useCallback(() => {
     setScanStatus('scanning');
-    setSurfaceConfidence(0.3);
-  }, []);
+    setSurfaceConfidence(0.5);
+    // On rescan, place Pikachu right in the center view
+    const preset = SURFACE_PRESETS[surfaceType];
+    setRoadAnchor(preset.initialPos);
+    setTargetPosition(preset.initialPos);
+    setIsPikachuVisible(true);
+    setOffscreenDirection('none');
+  }, [surfaceType]);
 
-  // Listen to device motion & orientation (gyroscope)
+  // Update visibility and offscreen guidance (only for active mobile gyroscope!)
+  const updateVisibilityAndGuidance = useCallback((pitch: number, yaw: number, anchor: [number, number, number]) => {
+    // If device does not have a physical gyroscope moving (e.g. desktop webcam), ALWAYS keep Pikachu visible!
+    if (!hasGyro) {
+      setIsPikachuVisible(true);
+      setOffscreenDirection('none');
+      return;
+    }
+
+    const pitchDeg = THREE.MathUtils.radToDeg(pitch);
+    const anchorX = anchor[0];
+    const anchorZ = anchor[2];
+    const angleToAnchor = Math.atan2(anchorX, -anchorZ);
+
+    let relYaw = angleToAnchor - yaw;
+    while (relYaw > Math.PI) relYaw -= Math.PI * 2;
+    while (relYaw < -Math.PI) relYaw += Math.PI * 2;
+    const relYawDeg = THREE.MathUtils.radToDeg(relYaw);
+
+    // On mobile phone with gyro, check if looking far away
+    if (pitchDeg > 25) {
+      setOffscreenDirection('down');
+      setIsPikachuVisible(false);
+    } else if (relYawDeg > 42) {
+      setOffscreenDirection('right');
+      setIsPikachuVisible(false);
+    } else if (relYawDeg < -42) {
+      setOffscreenDirection('left');
+      setIsPikachuVisible(false);
+    } else {
+      setOffscreenDirection('none');
+      setIsPikachuVisible(true);
+    }
+  }, [hasGyro]);
+
+  // Device orientation / Gyroscope listener
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    let roadStableFrames = 0;
 
     const handleOrientation = (e: DeviceOrientationEvent) => {
       if (e.beta === null || e.gamma === null) return;
       setHasGyro(true);
 
-      const beta = e.beta; // Pitch [-180, 180]. When tilted forward pointing at the road/ground, beta is ~35° to 75°
-      const gamma = e.gamma; // Roll [-90, 90]
-      const alpha = e.alpha || 0; // Compass Yaw [0, 360]
+      const beta = e.beta;
+      const gamma = e.gamma;
+      const alpha = e.alpha ?? 0;
 
-      if (initialAlphaRef.current === null && alpha !== null) {
+      if (initialAlphaRef.current === null && e.alpha !== null) {
         initialAlphaRef.current = alpha;
       }
-      const relYaw = ((alpha - (initialAlphaRef.current || 0)) * Math.PI) / 180;
 
-      // Convert degrees to camera pitch (looking down towards ground = positive pitch)
-      // When phone is vertical (beta = 90), pitch = 0.
-      // When phone tilts forward towards road (beta = 45), pitch = +45 deg down.
-      const rawPitch = THREE.MathUtils.degToRad(Math.max(-45, Math.min(65, 80 - beta)));
-      const rawRoll = THREE.MathUtils.degToRad(Math.max(-30, Math.min(30, gamma * 0.4)));
+      const targetPitchDeg = THREE.MathUtils.clamp(beta - 90, -85, 45);
+      const rawPitch = THREE.MathUtils.degToRad(targetPitchDeg) + manualOffsetRef.current.pitch;
 
-      // Smooth with low-pass filter
-      const lerpFactor = 0.18;
+      let deltaAlpha = alpha - (initialAlphaRef.current ?? alpha);
+      while (deltaAlpha > 180) deltaAlpha -= 360;
+      while (deltaAlpha < -180) deltaAlpha += 360;
+      const rawYaw = THREE.MathUtils.degToRad(-deltaAlpha) + manualOffsetRef.current.yaw;
+
+      const rawRoll = THREE.MathUtils.degToRad(THREE.MathUtils.clamp(-gamma * 0.5, -45, 45));
+
+      const lerpFactor = 0.22;
       smoothEulerRef.current.pitch = THREE.MathUtils.lerp(smoothEulerRef.current.pitch, rawPitch, lerpFactor);
-      smoothEulerRef.current.yaw = THREE.MathUtils.lerp(smoothEulerRef.current.yaw, -relYaw * 0.5, lerpFactor);
+      smoothEulerRef.current.yaw = THREE.MathUtils.lerp(smoothEulerRef.current.yaw, rawYaw, lerpFactor);
       smoothEulerRef.current.roll = THREE.MathUtils.lerp(smoothEulerRef.current.roll, rawRoll, lerpFactor);
 
       setCameraRotation([
@@ -153,44 +233,15 @@ export function useARSurfaceTracking(initialAutoPlaceDelayMs: number = 1800): AR
         smoothEulerRef.current.roll,
       ]);
 
-      // Detect if user is pointing camera down at the road or land
-      const isPointingAtRoad = beta >= 25 && beta <= 85;
-      setIsTiltTowardsRoad(isPointingAtRoad);
-
-      if (isPointingAtRoad) {
-        roadStableFrames++;
-        setSurfaceConfidence((prev) => Math.min(1.0, prev + 0.04));
-
-        // Once the camera has steadily tracked the road for a moment, auto-lock surface
-        if (roadStableFrames > 25 && scanStatus === 'scanning') {
-          setScanStatus('locked');
-        }
-      } else {
-        roadStableFrames = Math.max(0, roadStableFrames - 1);
-      }
+      updateVisibilityAndGuidance(smoothEulerRef.current.pitch, smoothEulerRef.current.yaw, roadAnchor);
     };
 
     window.addEventListener('deviceorientation', handleOrientation);
 
-    // Automatic fallback for desktop / non-gyro devices:
-    // After initial scan delay (1.8s), the road surface locks automatically
-    scanTimerRef.current = setTimeout(() => {
-      setScanStatus((current) => {
-        if (current === 'scanning') {
-          setSurfaceConfidence(1.0);
-          return 'locked';
-        }
-        return current;
-      });
-    }, initialAutoPlaceDelayMs);
-
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
-      if (scanTimerRef.current) {
-        clearTimeout(scanTimerRef.current);
-      }
     };
-  }, [scanStatus, initialAutoPlaceDelayMs]);
+  }, [roadAnchor, updateVisibilityAndGuidance]);
 
   return {
     scanStatus,
@@ -200,8 +251,13 @@ export function useARSurfaceTracking(initialAutoPlaceDelayMs: number = 1800): AR
     targetPosition,
     cameraRotation,
     surfaceConfidence,
+    isPikachuVisible,
+    offscreenDirection,
+    surfaceType,
+    setSurfaceType,
     requestGyroPermission,
     placeOnRoad,
+    setManualRotation,
     rescanRoad,
     confirmSpawn,
   };
