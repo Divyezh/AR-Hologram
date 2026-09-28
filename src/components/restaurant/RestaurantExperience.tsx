@@ -66,7 +66,11 @@ export const RestaurantExperience: React.FC = () => {
   };
 
   return (
-    <div className="relative w-screen h-screen bg-black text-white select-none overflow-y-auto">
+    <div
+      className={`relative w-screen h-screen bg-black text-white select-none ${
+        currentStep === 'camera' ? 'overflow-hidden touch-none' : 'overflow-y-auto'
+      }`}
+    >
       {/* 1. View Switcher based on Flow Step */}
       {currentStep === 'qr' && (
         <TableQRCodeScreen

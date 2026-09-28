@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { FoodModelDispatcher } from './models/FoodModelDispatcher';
 import { DishItem } from '../../data/restaurantMenu';
@@ -28,6 +28,22 @@ const FoodRig: React.FC<{
 }> = ({ dish, onTapInfo, isAutoRotate, scale, rotation, position }) => {
   const outerGroupRef = useRef<THREE.Group>(null);
   const autoSpinRef = useRef<number>(0);
+  const { viewport } = useThree();
+
+  // Responsive device-adaptive base sizing:
+  // On mobile portrait (viewport.aspect < 1.0), visible width is ~1.5 - 1.8 units at distance z=4.2.
+  // Standard plate diameter is ~3.6 units, which previously overflowed mobile screens by >250%.
+  // We scale the dish so that the entire plate spans ~68% of the visible viewport width on mobile,
+  // and sits comfortably in view on tablets and desktops.
+  const isPortrait = viewport.aspect < 1.0;
+  const targetPlateUnits = isPortrait
+    ? Math.min(viewport.width * 0.70, 1.30)
+    : Math.min(viewport.height * 0.50, 1.80);
+  const baseDeviceMultiplier = targetPlateUnits / 3.6;
+
+  // On mobile portrait, bottom HUD takes up ~32% of screen height.
+  // Shifting the model upward by +0.35 units puts it dead-center in the visible open camera viewport!
+  const verticalOffset = isPortrait ? 0.35 : 0.0;
 
   useFrame((_, delta) => {
     if (!outerGroupRef.current) return;
@@ -44,20 +60,24 @@ const FoodRig: React.FC<{
     const currentRotX = outerGroupRef.current.rotation.x;
     outerGroupRef.current.rotation.x = THREE.MathUtils.lerp(currentRotX, rotation.x, 0.15);
 
-    // Smooth position lerp
+    // Smooth position lerp with responsive vertical offset
     outerGroupRef.current.position.x = THREE.MathUtils.lerp(outerGroupRef.current.position.x, position.x, 0.15);
-    outerGroupRef.current.position.y = THREE.MathUtils.lerp(outerGroupRef.current.position.y, position.y, 0.15);
+    outerGroupRef.current.position.y = THREE.MathUtils.lerp(
+      outerGroupRef.current.position.y,
+      position.y + verticalOffset,
+      0.15
+    );
     outerGroupRef.current.position.z = THREE.MathUtils.lerp(outerGroupRef.current.position.z, position.z, 0.15);
 
-    // Smooth scale lerp
-    const targetScale = dish.defaultScale * scale;
+    // Smooth scale lerp with responsive base device multiplier and user zoom
+    const targetScale = dish.defaultScale * baseDeviceMultiplier * scale;
     const currentScale = outerGroupRef.current.scale.x;
     const nextScale = THREE.MathUtils.lerp(currentScale, targetScale, 0.15);
     outerGroupRef.current.scale.set(nextScale, nextScale, nextScale);
   });
 
   return (
-    <group ref={outerGroupRef} position={[0, -0.1, 0]}>
+    <group ref={outerGroupRef} position={[0, -0.1 + verticalOffset, 0]}>
       <FoodModelDispatcher dish={dish} onTapInfo={onTapInfo} />
     </group>
   );
@@ -78,13 +98,20 @@ export const InteractiveFoodScene: React.FC<InteractiveFoodSceneProps> = ({
   const [rotation, setRotation] = useState<{ x: number; y: number }>({ x: 0.25, y: -0.4 });
   const [position, setPosition] = useState<{ x: number; y: number; z: number }>({ x: 0, y: -0.1, z: 0 });
 
-  // Drag tracking refs
+  // Drag & Pinch tracking refs
   const isDraggingRef = useRef(false);
-  const dragModeRef = useRef<'rotate' | 'move'>('rotate');
+  const dragModeRef = useRef<'rotate' | 'pinch' | 'move'>('rotate');
   const lastMousePosRef = useRef({ x: 0, y: 0 });
-  const touchStartDistRef = useRef<number | null>(null);
+  const pinchStartDistRef = useRef<number | null>(null);
+  const pinchStartScaleRef = useRef<number>(scale);
+  const currentScaleRef = useRef<number>(scale);
   const touchStartCenterRef = useRef<{ x: number; y: number } | null>(null);
   const lastTapTimeRef = useRef<number>(0);
+
+  // Synchronize internal scale ref with scale prop
+  useEffect(() => {
+    currentScaleRef.current = scale;
+  }, [scale]);
 
   // Handle Double-Tap / Double-Click to Reset
   const handleReset = useCallback(() => {
@@ -98,24 +125,25 @@ export const InteractiveFoodScene: React.FC<InteractiveFoodSceneProps> = ({
   // Touch handlers for mobile (Rotate with 1 finger, Pinch scale with 2 fingers, Move with 2 fingers)
   const handleTouchStart = (e: React.TouchEvent) => {
     const now = Date.now();
-    // Double-tap check (< 300ms)
-    if (now - lastTapTimeRef.current < 300) {
+    // Double-tap check (< 300ms) with single finger
+    if (e.touches.length === 1 && now - lastTapTimeRef.current < 300) {
       handleReset();
       lastTapTimeRef.current = 0;
       return;
     }
-    lastTapTimeRef.current = now;
 
     if (e.touches.length === 1) {
+      lastTapTimeRef.current = now;
       isDraggingRef.current = true;
       dragModeRef.current = 'rotate';
       lastMousePosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     } else if (e.touches.length === 2) {
       isDraggingRef.current = true;
-      dragModeRef.current = 'move';
+      dragModeRef.current = 'pinch';
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
-      touchStartDistRef.current = Math.hypot(dx, dy);
+      pinchStartDistRef.current = Math.hypot(dx, dy);
+      pinchStartScaleRef.current = currentScaleRef.current;
       touchStartCenterRef.current = {
         x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
         y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
@@ -136,26 +164,26 @@ export const InteractiveFoodScene: React.FC<InteractiveFoodSceneProps> = ({
         y: prev.y + dx * 0.012,
       }));
     } else if (e.touches.length === 2) {
-      // 1. Pinch Scale
+      // 1. Pinch to Zoom with baseline preservation (zero jitter, responsive across frame rates)
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       const currentDist = Math.hypot(dx, dy);
 
-      if (touchStartDistRef.current) {
-        const factor = currentDist / touchStartDistRef.current;
-        const newScale = Math.max(0.5, Math.min(2.5, scale * (1 + (factor - 1) * 0.3)));
+      if (pinchStartDistRef.current && pinchStartDistRef.current > 10) {
+        const factor = currentDist / pinchStartDistRef.current;
+        const newScale = Math.max(0.4, Math.min(2.5, +(pinchStartScaleRef.current * factor).toFixed(3)));
+        currentScaleRef.current = newScale;
         onScaleChange(newScale);
-        touchStartDistRef.current = currentDist;
       }
 
-      // 2. Two-finger Move
+      // 2. Two-finger Move / Pan
       const currentCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
       const currentCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
       if (touchStartCenterRef.current) {
-        const moveX = (currentCenterX - touchStartCenterRef.current.x) * 0.005;
-        const moveY = -(currentCenterY - touchStartCenterRef.current.y) * 0.005;
+        const moveX = (currentCenterX - touchStartCenterRef.current.x) * 0.004;
+        const moveY = -(currentCenterY - touchStartCenterRef.current.y) * 0.004;
         setPosition((prev) => ({
-          x: Math.max(-2.5, Math.min(2.5, prev.x + moveX)),
+          x: Math.max(-2.0, Math.min(2.0, prev.x + moveX)),
           y: Math.max(-1.5, Math.min(1.5, prev.y + moveY)),
           z: prev.z,
         }));
@@ -164,16 +192,23 @@ export const InteractiveFoodScene: React.FC<InteractiveFoodSceneProps> = ({
     }
   };
 
-  const handleTouchEnd = () => {
-    isDraggingRef.current = false;
-    touchStartDistRef.current = null;
-    touchStartCenterRef.current = null;
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      // 1 finger still touching: smoothly resume single finger rotate
+      dragModeRef.current = 'rotate';
+      lastMousePosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      pinchStartDistRef.current = null;
+      touchStartCenterRef.current = null;
+    } else if (e.touches.length === 0) {
+      isDraggingRef.current = false;
+      pinchStartDistRef.current = null;
+      touchStartCenterRef.current = null;
+    }
   };
 
   // Mouse handlers for desktop
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button === 0) {
-      // Left click
       isDraggingRef.current = true;
       dragModeRef.current = e.shiftKey ? 'move' : 'rotate';
       lastMousePosRef.current = { x: e.clientX, y: e.clientY };
@@ -194,7 +229,7 @@ export const InteractiveFoodScene: React.FC<InteractiveFoodSceneProps> = ({
       }));
     } else {
       setPosition((prev) => ({
-        x: Math.max(-2.5, Math.min(2.5, prev.x + dx * 0.005)),
+        x: Math.max(-2.0, Math.min(2.0, prev.x + dx * 0.005)),
         y: Math.max(-1.5, Math.min(1.5, prev.y - dy * 0.005)),
         z: prev.z,
       }));
@@ -209,7 +244,8 @@ export const InteractiveFoodScene: React.FC<InteractiveFoodSceneProps> = ({
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     const delta = -e.deltaY * 0.0015;
-    const nextScale = Math.max(0.5, Math.min(2.5, scale + delta));
+    const nextScale = Math.max(0.4, Math.min(2.5, +(currentScaleRef.current + delta).toFixed(2)));
+    currentScaleRef.current = nextScale;
     onScaleChange(nextScale);
   };
 
@@ -223,9 +259,11 @@ export const InteractiveFoodScene: React.FC<InteractiveFoodSceneProps> = ({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
       onWheel={handleWheel}
       onDoubleClick={handleReset}
-      className="relative w-full h-full cursor-grab active:cursor-grabbing select-none"
+      className="relative w-full h-full cursor-grab active:cursor-grabbing select-none touch-none"
+      style={{ touchAction: 'none' }}
     >
       <Canvas
         camera={{ position: [0, 1.8, 4.2], fov: 42 }}
@@ -264,3 +302,4 @@ export const InteractiveFoodScene: React.FC<InteractiveFoodSceneProps> = ({
     </div>
   );
 };
+

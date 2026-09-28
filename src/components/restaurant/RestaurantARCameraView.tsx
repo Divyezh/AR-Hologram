@@ -13,6 +13,8 @@ import {
   Sparkles,
   Camera,
   CameraOff,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
 import { InteractiveFoodScene } from './InteractiveFoodScene';
 import { DishItem, RESTAURANT_MENU, RESTAURANT_INFO } from '../../data/restaurantMenu';
@@ -168,7 +170,7 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
           <span className="text-white/20">•</span>
           <span className="flex items-center gap-1 text-cyan-300">
             <span>🤏</span>
-            <span>Scale</span>
+            <span>Pinch / Zoom</span>
           </span>
           <span className="text-white/20">•</span>
           <span className="flex items-center gap-1 text-emerald-300">
@@ -244,15 +246,51 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
         </div>
       </header>
 
-      {/* 4. Bottom Main Dish Card & Switcher (User Diagram Architecture) */}
+      {/* 4. Floating On-Screen Zoom Controls (+ / - / % indicator) */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-1.5 p-1.5 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/15 shadow-2xl pointer-events-auto">
+        {/* Zoom In Button */}
+        <button
+          onClick={() => {
+            soundManager.playClick();
+            setScale((prev) => Math.min(2.5, +(prev + 0.15).toFixed(2)));
+          }}
+          title="Zoom In (+)"
+          className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 text-white transition-all cursor-pointer"
+        >
+          <ZoomIn className="w-4 h-4 text-amber-400" />
+        </button>
+
+        {/* Current Zoom Percentage - Tap to reset */}
+        <button
+          onClick={handleReset}
+          title="Tap to Reset Zoom to 100%"
+          className="px-1 py-1 text-[10px] font-mono font-bold text-amber-300 hover:text-white transition-colors cursor-pointer"
+        >
+          {Math.round(scale * 100)}%
+        </button>
+
+        {/* Zoom Out Button */}
+        <button
+          onClick={() => {
+            soundManager.playClick();
+            setScale((prev) => Math.max(0.4, +(prev - 0.15).toFixed(2)));
+          }}
+          title="Zoom Out (-)"
+          className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 text-white transition-all cursor-pointer"
+        >
+          <ZoomOut className="w-4 h-4 text-amber-400" />
+        </button>
+      </div>
+
+      {/* 5. Bottom Main Dish Card & Switcher (User Diagram Architecture) */}
       <footer className="absolute bottom-4 inset-x-4 z-20 flex flex-col items-center gap-3 pointer-events-none">
         {/* Mobile Gestures Pill (visible on small screens) */}
-        <div className="flex md:hidden items-center gap-2 px-3 py-1 rounded-full bg-black/60 backdrop-blur-xl border border-white/15 text-[10px] text-white/80 font-mono pointer-events-auto">
+        <div className="flex md:hidden items-center gap-2 px-3 py-1.5 rounded-full bg-black/65 backdrop-blur-xl border border-white/15 text-[10px] text-white/85 font-mono pointer-events-auto shadow-lg">
           <span>👆 Drag rotate</span>
           <span>•</span>
-          <span>🤏 Pinch zoom</span>
+          <span>🤏 Pinch / 🔍 Zoom</span>
           <span>•</span>
-          <button onClick={handleReset} className="text-amber-400 font-bold underline">
+          <button onClick={handleReset} className="text-amber-400 font-bold underline cursor-pointer">
             👆👆 Reset
           </button>
         </div>
