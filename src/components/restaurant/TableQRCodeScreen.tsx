@@ -1,9 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   QrCode,
-  Utensils,
   Camera,
   Sparkles,
   ChevronRight,
@@ -11,16 +10,20 @@ import {
   ArrowRight,
   CheckCircle2,
   Clock,
-  Flame,
-  Star,
   RefreshCw,
   SwitchCamera,
   AlertCircle,
   X,
-} from 'lucide-react';
-import jsQR from 'jsqr';
-import { RESTAURANT_MENU, RESTAURANT_INFO, DishItem } from '../../data/restaurantMenu';
-import { soundManager } from '../../lib/audio/soundManager';
+  Maximize2,
+  Zap,
+} from "lucide-react";
+import { RESTAURANT_MENU, RESTAURANT_INFO, DishItem } from "../../data/restaurantMenu";
+import { soundManager } from "../../lib/audio/soundManager";
+import {
+  generateQRCodeDataUrl,
+  scanQRCodeFromVideo,
+  matchDishFromScannedText,
+} from "../../lib/qr/qrService";
 
 interface TableQRCodeScreenProps {
   onSelectDish: (dish: DishItem) => void;
@@ -32,16 +35,54 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
   onEnterMenu,
 }) => {
   // 'stand' = Table QR Code Stand, 'scanning' = Live camera viewfinder, 'list' = Select Dish List
-  const [viewState, setViewState] = useState<'stand' | 'scanning' | 'list'>('stand');
+  const [viewState, setViewState] = useState<"stand" | "scanning" | "list">("stand");
   const [scannedSuccess, setScannedSuccess] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
-  const [scannedFeedback, setScannedFeedback] = useState<string>('Table #04 Verified!');
+  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+  const [scannedFeedback, setScannedFeedback] = useState<string>("Table #04 Verified!");
+
+  // Real QR Code generation state
+  const [qrPreset, setQrPreset] = useState<"table" | "burger" | "pizza" | "sushi">("table");
+  const [generatedQrDataUrl, setGeneratedQrDataUrl] = useState<string>("");
+  const [isFullscreenQrOpen, setIsFullscreenQrOpen] = useState(false);
+  const [hasTorch, setHasTorch] = useState(false);
+  const [isTorchOn, setIsTorchOn] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameIdRef = useRef<number | null>(null);
+  const lastScanTimestampRef = useRef<number>(0);
+
+  // Generate real valid scannable QR Code on preset change
+  useEffect(() => {
+    let active = true;
+    const generate = async () => {
+      let qrText = "TABLE-04";
+      if (qrPreset === "burger") qrText = "classic-burger";
+      else if (qrPreset === "pizza") qrText = "margherita-pizza";
+      else if (qrPreset === "sushi") qrText = "salmon-sushi";
+
+      try {
+        const dataUrl = await generateQRCodeDataUrl(qrText, {
+          width: 600,
+          margin: 3, // Quiet zone required for reliable scanner reading
+          darkColor: "#000000",
+          lightColor: "#ffffff",
+        });
+        if (active) {
+          setGeneratedQrDataUrl(dataUrl);
+        }
+      } catch (e) {
+        console.error("QR generation error:", e);
+      }
+    };
+
+    generate();
+    return () => {
+      active = false;
+    };
+  }, [qrPreset]);
 
   const stopCamera = useCallback(() => {
     if (animFrameIdRef.current) {
@@ -52,6 +93,8 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
       cameraStream.getTracks().forEach((t) => t.stop());
       setCameraStream(null);
     }
+    setIsTorchOn(false);
+    setHasTorch(false);
   }, [cameraStream]);
 
   // Clean transition to list or dish on successful QR scan
@@ -61,16 +104,21 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
       setScannedSuccess(true);
       soundManager.playOrderBell();
 
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
         try {
           navigator.vibrate([100, 50, 100]);
-        } catch (e) {}
+        } catch {}
       }
 
-      if (detectedText) {
-        setScannedFeedback(
-          detectedText.length > 25 ? 'QR Code Verified!' : `QR: ${detectedText}`
-        );
+      // Check if detected code matches any dish ID
+      const matchedDish = detectedText
+        ? matchDishFromScannedText(detectedText, RESTAURANT_MENU)
+        : undefined;
+
+      if (matchedDish) {
+        setScannedFeedback(`Found: ${matchedDish.name}!`);
+      } else if (detectedText) {
+        setScannedFeedback(detectedText.length > 25 ? "QR Code Verified!" : `QR: ${detectedText}`);
       }
 
       // Stop scanning loop immediately
@@ -79,21 +127,12 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
         animFrameIdRef.current = null;
       }
 
-      // Check if detected code matches any dish ID
-      const matchedDish = detectedText
-        ? RESTAURANT_MENU.find(
-            (d) =>
-              d.id.toLowerCase() === detectedText.toLowerCase() ||
-              detectedText.toLowerCase().includes(d.id.toLowerCase())
-          )
-        : undefined;
-
       setTimeout(() => {
         stopCamera();
         if (matchedDish) {
           onSelectDish(matchedDish);
         } else {
-          setViewState('list');
+          setViewState("list");
         }
         setScannedSuccess(false);
       }, 700);
@@ -104,14 +143,21 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
   // Direct instant scan (from QR stand button or manual confirm button)
   const triggerScan = () => {
     soundManager.playClick();
-    handleSuccessfulScan('Table 04 Verified');
+    if (qrPreset === "burger") {
+      const burger = RESTAURANT_MENU.find((d) => d.id === "classic-burger");
+      if (burger) {
+        handleSuccessfulScan("classic-burger");
+        return;
+      }
+    }
+    handleSuccessfulScan("Table 04 Verified");
   };
 
   // Start webcam for real QR camera scanner without premature auto-closing
-  const startCameraScanner = async (targetFacingMode?: 'environment' | 'user') => {
+  const startCameraScanner = async (targetFacingMode?: "environment" | "user") => {
     stopCamera();
     setCameraError(null);
-    setViewState('scanning');
+    setViewState("scanning");
     soundManager.playClick();
 
     const mode = targetFacingMode || facingMode;
@@ -125,86 +171,83 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
         },
       });
       setCameraStream(stream);
+
+      // Check torch support
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        const capabilities = videoTrack.getCapabilities?.() as
+          (MediaTrackCapabilities & { torch?: boolean }) | undefined;
+        if (capabilities?.torch) {
+          setHasTorch(true);
+        }
+      }
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute("playsinline", "true");
         videoRef.current.play().catch(() => {});
       }
-    } catch (err: any) {
-      console.warn('Camera scanner error:', err);
-      // DO NOT auto-close! Give friendly user feedback and allow manual proceed
+    } catch (err: unknown) {
+      console.warn("Camera scanner error:", err);
+      const errorObj = err instanceof Error ? err : new Error(String(err));
       setCameraError(
-        err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError'
-          ? 'Camera access was blocked. Please grant camera permission in your browser settings, or tap below to proceed.'
-          : 'Camera is currently unavailable on this device. You can tap below to proceed.'
+        errorObj.name === "NotAllowedError" || errorObj.name === "PermissionDeniedError"
+          ? "Camera access was blocked. Please grant camera permission in your browser settings, or tap below to proceed."
+          : "Camera is currently unavailable on this device. You can tap below to proceed."
       );
+    }
+  };
+
+  const toggleTorch = async () => {
+    if (!cameraStream) return;
+    const track = cameraStream.getVideoTracks()[0];
+    if (track) {
+      try {
+        const nextState = !isTorchOn;
+        await (
+          track as MediaStreamTrack & {
+            applyConstraints: (c: MediaTrackConstraints) => Promise<void>;
+          }
+        ).applyConstraints({
+          advanced: [{ torch: nextState } as unknown as MediaTrackConstraintSet],
+        });
+        setIsTorchOn(nextState);
+      } catch (e) {
+        console.warn("Torch failed:", e);
+      }
     }
   };
 
   const toggleFacingMode = () => {
     soundManager.playClick();
-    const nextMode = facingMode === 'environment' ? 'user' : 'environment';
+    const nextMode = facingMode === "environment" ? "user" : "environment";
     setFacingMode(nextMode);
     startCameraScanner(nextMode);
   };
 
-  // Continuous real-time frame scanning using jsQR & BarcodeDetector
+  // Continuous real-time frame scanning using dual-engine (BarcodeDetector + jsQR)
   useEffect(() => {
-    if (viewState !== 'scanning' || !cameraStream) return;
+    if (viewState !== "scanning" || !cameraStream) return;
 
     let active = true;
 
-    const scanFrame = async () => {
+    const scanFrame = async (timestamp: number) => {
       if (!active) return;
 
-      const video = videoRef.current;
-      if (video && video.readyState >= video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
-        if (!canvasRef.current) {
-          canvasRef.current = document.createElement('canvas');
-        }
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      // Throttle scanning to every 90ms so mobile CPU does not choke
+      if (timestamp - lastScanTimestampRef.current >= 90) {
+        lastScanTimestampRef.current = timestamp;
 
-        if (ctx) {
-          const targetW = Math.min(video.videoWidth, 640);
-          const targetH = Math.round((targetW / video.videoWidth) * video.videoHeight);
-          canvas.width = targetW;
-          canvas.height = targetH;
-          ctx.drawImage(video, 0, 0, targetW, targetH);
-
-          let detectedText: string | null = null;
-
-          // 1. Native hardware BarcodeDetector if supported
-          if ('BarcodeDetector' in window) {
-            try {
-              const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
-              const barcodes = await detector.detect(canvas);
-              if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
-                detectedText = barcodes[0].rawValue;
-              }
-            } catch (e) {
-              // fallback to jsQR
+        const video = videoRef.current;
+        if (video && video.readyState >= video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
+          try {
+            const result = await scanQRCodeFromVideo(video, canvasRef.current, RESTAURANT_MENU);
+            if (result && result.data && active) {
+              handleSuccessfulScan(result.data);
+              return;
             }
-          }
-
-          // 2. Pure JS jsQR library detection
-          if (!detectedText) {
-            try {
-              const imgData = ctx.getImageData(0, 0, targetW, targetH);
-              const code = jsQR(imgData.data, targetW, targetH, {
-                inversionAttempts: 'dontInvert',
-              });
-              if (code && code.data) {
-                detectedText = code.data;
-              }
-            } catch (e) {
-              // ignore frame read error
-            }
-          }
-
-          if (detectedText) {
-            handleSuccessfulScan(detectedText);
-            return;
+          } catch {
+            // Ignore frame error and continue
           }
         }
       }
@@ -249,9 +292,9 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {viewState === 'list' && (
+          {viewState === "list" && (
             <button
-              onClick={() => setViewState('stand')}
+              onClick={() => setViewState("stand")}
               className="px-3 py-1.5 rounded-full bg-white/8 hover:bg-white/14 border border-white/12 text-white/80 text-xs font-medium transition-colors cursor-pointer"
             >
               <QrCode className="w-3.5 h-3.5 inline mr-1 text-amber-400" />
@@ -267,129 +310,192 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
       </header>
 
       {/* VIEW STATE 1: TABLE QR CODE STAND */}
-      {viewState === 'stand' && (
+      {viewState === "stand" && (
         <main className="relative z-10 w-full max-w-md mx-auto my-auto flex flex-col items-center text-center py-6">
           <div className="relative w-full p-6 sm:p-8 rounded-[36px] bg-white/6 backdrop-blur-3xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.7)] flex flex-col items-center">
             {/* Subtle inner light reflection */}
             <div className="absolute top-0 inset-x-12 h-px bg-linear-to-r from-transparent via-white/30 to-transparent" />
 
             {/* Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/8 border border-white/12 text-xs font-medium text-white/80 mb-5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/8 border border-white/12 text-xs font-medium text-white/80 mb-4">
               <QrCode className="w-3.5 h-3.5 text-amber-400" />
-              <span>Tabletop AR Dining Stand</span>
+              <span>Real Scannable QR Code</span>
             </div>
 
-            {/* Interactive QR Code Button - CLICKABLE! */}
-            <div
-              onClick={triggerScan}
-              className={`group relative w-56 h-56 p-4 rounded-3xl bg-neutral-900/90 border-2 transition-all duration-300 flex items-center justify-center cursor-pointer shadow-[0_0_30px_rgba(245,158,11,0.2)] hover:scale-103 ${
-                scannedSuccess
-                  ? 'border-emerald-400 shadow-[0_0_40px_rgba(52,211,153,0.5)]'
-                  : 'border-amber-400/50 hover:border-amber-400'
-              }`}
-            >
-              {scannedSuccess ? (
-                <div className="flex flex-col items-center gap-2 text-emerald-400 animate-in zoom-in-75 duration-200">
-                  <CheckCircle2 className="w-16 h-16 animate-bounce" />
-                  <span className="text-xs font-bold tracking-wider uppercase">QR Code Verified!</span>
-                  <span className="text-[11px] text-white/70">Loading 3D Dish List...</span>
-                </div>
-              ) : (
-                <>
-                  {/* High Quality QR SVG */}
-                  <svg
-                    className="w-full h-full text-white/90"
-                    viewBox="0 0 100 100"
-                    fill="currentColor"
-                  >
-                    <rect x="6" y="6" width="26" height="26" rx="4" fill="none" stroke="currentColor" strokeWidth="4" />
-                    <rect x="13" y="13" width="12" height="12" rx="2" fill="#f59e0b" />
-                    <rect x="68" y="6" width="26" height="26" rx="4" fill="none" stroke="currentColor" strokeWidth="4" />
-                    <rect x="75" y="13" width="12" height="12" rx="2" fill="#f59e0b" />
-                    <rect x="6" y="68" width="26" height="26" rx="4" fill="none" stroke="currentColor" strokeWidth="4" />
-                    <rect x="13" y="75" width="12" height="12" rx="2" fill="#f59e0b" />
-                    <circle cx="50" cy="50" r="14" fill="#000000" stroke="#f59e0b" strokeWidth="2" />
-                    <text x="50" y="55" fontSize="12" textAnchor="middle" fill="#ffffff">🍔</text>
-                    <rect x="38" y="10" width="8" height="6" rx="1" />
-                    <rect x="50" y="10" width="12" height="6" rx="1" />
-                    <rect x="38" y="20" width="16" height="8" rx="1" />
-                    <rect x="10" y="38" width="8" height="14" rx="1" />
-                    <rect x="22" y="44" width="10" height="8" rx="1" />
-                    <rect x="70" y="38" width="8" height="10" rx="1" />
-                    <rect x="82" y="44" width="8" height="14" rx="1" />
-                    <rect x="38" y="70" width="14" height="8" rx="1" />
-                    <rect x="58" y="68" width="10" height="12" rx="1" />
-                    <rect x="74" y="70" width="16" height="6" rx="1" />
-                    <rect x="74" y="80" width="8" height="10" rx="1" />
-                  </svg>
-
-                  {/* Laser Scanning sweep */}
-                  <div className="absolute inset-x-4 top-4 bottom-4 pointer-events-none overflow-hidden rounded-2xl">
-                    <div
-                      className="w-full h-1 bg-linear-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_14px_#f59e0b] animate-bounce"
-                      style={{ animationDuration: '2.2s' }}
-                    />
+            {/* Interactive Real QR Code Display Card */}
+            <div className="relative flex flex-col items-center">
+              {/* The Actual QR Code Card (High Contrast White Container) */}
+              <div
+                onClick={triggerScan}
+                className={`group relative w-60 h-60 p-3 rounded-3xl bg-white transition-all duration-300 flex items-center justify-center cursor-pointer shadow-[0_0_35px_rgba(245,158,11,0.25)] hover:scale-102 ${
+                  scannedSuccess
+                    ? "ring-4 ring-emerald-400 shadow-[0_0_50px_rgba(52,211,153,0.6)]"
+                    : "ring-2 ring-amber-400/40 hover:ring-amber-400"
+                }`}
+                title="Click to simulate scan or point another phone camera!"
+              >
+                {scannedSuccess ? (
+                  <div className="flex flex-col items-center gap-2 text-emerald-600 animate-in zoom-in-75 duration-200">
+                    <CheckCircle2 className="w-16 h-16 animate-bounce" />
+                    <span className="text-xs font-bold tracking-wider uppercase">
+                      QR Code Verified!
+                    </span>
+                    <span className="text-[11px] text-neutral-600">Loading 3D Dish...</span>
                   </div>
+                ) : (
+                  <>
+                    {/* Real Generated QR Image */}
+                    {generatedQrDataUrl ? (
+                      <img
+                        src={generatedQrDataUrl}
+                        alt="Scannable Dining Table QR Code"
+                        className="w-full h-full object-contain rounded-2xl"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-neutral-400 text-xs">
+                        Generating QR...
+                      </div>
+                    )}
 
-                  {/* Tap prompt */}
-                  <div className="absolute bottom-2.5 inset-x-3 py-1.5 rounded-xl bg-black/85 backdrop-blur-md text-[11px] font-bold text-amber-300 shadow-md">
-                    👆 Click to Scan QR Code
-                  </div>
-                </>
-              )}
+                    {/* Laser Scanning sweep */}
+                    <div className="absolute inset-x-3 top-3 bottom-3 pointer-events-none overflow-hidden rounded-2xl">
+                      <div
+                        className="w-full h-1 bg-linear-to-r from-transparent via-amber-500 to-transparent shadow-[0_0_14px_#f59e0b] animate-bounce"
+                        style={{ animationDuration: "2.2s" }}
+                      />
+                    </div>
+
+                    {/* Tap prompt */}
+                    <div className="absolute bottom-2 inset-x-3 py-1 rounded-lg bg-black/85 backdrop-blur-md text-[10px] font-bold text-amber-300 shadow-md">
+                      👆 Tap here or scan with another phone
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Quick Actions Bar below QR (Enlarge for other phone, Preset switcher) */}
+              <div className="flex items-center gap-2 mt-3">
+                <button
+                  onClick={() => setIsFullscreenQrOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/18 border border-white/15 text-xs text-white/90 font-medium transition-colors cursor-pointer"
+                >
+                  <Maximize2 className="w-3 h-3 text-amber-400" />
+                  <span>Enlarge for Other Phone</span>
+                </button>
+              </div>
+
+              {/* QR Content Preset Switcher */}
+              <div className="flex items-center gap-1.5 mt-3 p-1 rounded-full bg-black/50 border border-white/10 text-[11px]">
+                <button
+                  onClick={() => setQrPreset("table")}
+                  className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+                    qrPreset === "table"
+                      ? "bg-amber-500 text-black font-bold"
+                      : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  Table #04
+                </button>
+                <button
+                  onClick={() => setQrPreset("burger")}
+                  className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+                    qrPreset === "burger"
+                      ? "bg-amber-500 text-black font-bold"
+                      : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  🍔 Burger ₹249
+                </button>
+                <button
+                  onClick={() => setQrPreset("pizza")}
+                  className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+                    qrPreset === "pizza"
+                      ? "bg-amber-500 text-black font-bold"
+                      : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  🍕 Pizza
+                </button>
+                <button
+                  onClick={() => setQrPreset("sushi")}
+                  className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+                    qrPreset === "sushi"
+                      ? "bg-amber-500 text-black font-bold"
+                      : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  🍣 Sushi
+                </button>
+              </div>
             </div>
 
-            {/* Title */}
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white mt-6 mb-1">
-              Scan Table #04 QR
+            {/* Title & Description */}
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white mt-5 mb-1">
+              Table #04 AR Dining
             </h1>
-            <p className="text-xs sm:text-sm text-white/60 mb-6">
-              Click the QR code to open the item list and inspect any dish in 3D!
+            <p className="text-xs sm:text-sm text-white/60 mb-5 max-w-xs">
+              Point your phone camera to scan the code, or tap below to open the dish list directly!
             </p>
 
-            {/* Primary Action Button: Scan QR & Show List */}
+            {/* Primary Action Button: Open Camera Scanner */}
             <button
-              onClick={triggerScan}
-              className="w-full py-4 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-[0_10px_25px_rgba(245,158,11,0.35)] transition-all cursor-pointer mb-3 active:scale-98"
+              onClick={() => startCameraScanner()}
+              className="w-full py-4 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-[0_10px_25px_rgba(245,158,11,0.35)] transition-all cursor-pointer mb-2.5 active:scale-98"
             >
-              <QrCode className="w-4 h-4 text-black" />
-              <span>Scan QR ➔ Select Dish List</span>
+              <Camera className="w-4 h-4 text-black" />
+              <span>📷 Open Phone Camera Scanner</span>
               <ChevronRight className="w-4 h-4 text-black/70" />
             </button>
 
-            {/* Camera Scanner Button */}
+            {/* Secondary Action: Select Dish from List */}
             <button
-              onClick={() => startCameraScanner()}
-              className="w-full py-3.5 px-6 rounded-2xl bg-white/10 hover:bg-white/16 border border-white/15 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98"
+              onClick={triggerScan}
+              className="w-full py-3 px-6 rounded-2xl bg-white/10 hover:bg-white/16 border border-white/15 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98"
             >
-              <Camera className="w-3.5 h-3.5 text-amber-400" />
-              <span>📷 Scan with Phone Camera</span>
+              <QrCode className="w-3.5 h-3.5 text-amber-400" />
+              <span>Instant Proceed ➔ Dish List</span>
             </button>
           </div>
         </main>
       )}
 
       {/* VIEW STATE 2: LIVE CAMERA SCANNER VIEWFINDER */}
-      {viewState === 'scanning' && (
+      {viewState === "scanning" && (
         <main className="relative z-10 w-full max-w-md mx-auto my-auto flex flex-col items-center text-center py-4 px-2">
           <div className="relative w-full p-5 sm:p-7 rounded-[36px] bg-neutral-950/95 border border-white/20 shadow-2xl flex flex-col items-center">
             {/* Header row with Title and Close X */}
             <div className="w-full flex items-center justify-between mb-3">
               <div className="text-left">
                 <h2 className="text-lg font-bold text-white leading-tight">Live QR Scanner</h2>
-                <p className="text-xs text-white/60">Align Table #04 QR inside reticle</p>
+                <p className="text-xs text-white/60">Align QR code inside reticle box</p>
               </div>
 
-              <button
-                onClick={() => {
-                  stopCamera();
-                  setViewState('stand');
-                }}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/80 transition-colors cursor-pointer"
-                title="Cancel Scan"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1.5">
+                {hasTorch && (
+                  <button
+                    onClick={toggleTorch}
+                    className={`p-2 rounded-full border transition-all cursor-pointer ${
+                      isTorchOn
+                        ? "bg-amber-400 text-black border-amber-300"
+                        : "bg-white/10 text-white/80 border-white/15"
+                    }`}
+                    title="Toggle Flashlight / Torch"
+                  >
+                    <Zap className="w-4 h-4" />
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    stopCamera();
+                    setViewState("stand");
+                  }}
+                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/80 transition-colors cursor-pointer"
+                  title="Cancel Scan"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Error banner if camera access failed */}
@@ -426,29 +532,29 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
                 {/* Viewfinder Target Reticle with 4 Corner Accents */}
                 <div className="absolute inset-8 pointer-events-none flex items-center justify-center">
                   {/* Corner accents */}
-                  <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-amber-400 rounded-tl-lg" />
-                  <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-amber-400 rounded-tr-lg" />
-                  <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-amber-400 rounded-bl-lg" />
-                  <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-amber-400 rounded-br-lg" />
+                  <div className="absolute top-0 left-0 w-7 h-7 border-t-4 border-l-4 border-amber-400 rounded-tl-xl shadow-[0_0_10px_#f59e0b]" />
+                  <div className="absolute top-0 right-0 w-7 h-7 border-t-4 border-r-4 border-amber-400 rounded-tr-xl shadow-[0_0_10px_#f59e0b]" />
+                  <div className="absolute bottom-0 left-0 w-7 h-7 border-b-4 border-l-4 border-amber-400 rounded-bl-xl shadow-[0_0_10px_#f59e0b]" />
+                  <div className="absolute bottom-0 right-0 w-7 h-7 border-b-4 border-r-4 border-amber-400 rounded-br-xl shadow-[0_0_10px_#f59e0b]" />
 
                   {/* Active Laser Scanning Sweep */}
                   <div
-                    className="w-full h-0.5 bg-linear-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_12px_#f59e0b] animate-bounce"
-                    style={{ animationDuration: '1.6s' }}
+                    className="w-full h-0.5 bg-linear-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_14px_#f59e0b] animate-bounce"
+                    style={{ animationDuration: "1.6s" }}
                   />
                 </div>
 
                 {/* Top Overlay Pill: Searching status */}
-                <div className="absolute top-3 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-[10px] text-white/80 flex items-center gap-1.5">
+                <div className="absolute top-3 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/15 text-[10px] text-white/90 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                  <span>Scanning active... Point at QR</span>
+                  <span>Scanning active... Point at QR code</span>
                 </div>
 
                 {/* Bottom Overlay: Camera Switcher */}
                 <div className="absolute bottom-3 right-3">
                   <button
                     onClick={toggleFacingMode}
-                    className="p-2 rounded-full bg-black/70 hover:bg-black/90 backdrop-blur-md border border-white/20 text-white/90 transition-all cursor-pointer shadow-lg"
+                    className="p-2.5 rounded-full bg-black/75 hover:bg-black/90 backdrop-blur-md border border-white/20 text-white/90 transition-all cursor-pointer shadow-lg active:scale-95"
                     title="Switch Front/Rear Camera"
                   >
                     <SwitchCamera className="w-4 h-4" />
@@ -457,7 +563,7 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
 
                 {/* Success Animation Overlay */}
                 {scannedSuccess && (
-                  <div className="absolute inset-0 bg-emerald-950/90 backdrop-blur-md flex flex-col items-center justify-center text-emerald-400 animate-in zoom-in-95 duration-200">
+                  <div className="absolute inset-0 bg-emerald-950/92 backdrop-blur-md flex flex-col items-center justify-center text-emerald-400 animate-in zoom-in-95 duration-200">
                     <CheckCircle2 className="w-16 h-16 animate-bounce" />
                     <span className="text-sm font-extrabold mt-2 tracking-wide uppercase">
                       {scannedFeedback}
@@ -473,13 +579,13 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
               onClick={triggerScan}
               className="mt-4 w-full py-3.5 px-4 rounded-2xl bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 active:scale-98 transition-all cursor-pointer"
             >
-              <span>⚡ Confirm Table #04 Scan</span>
+              <span>⚡ Confirm QR Scan Directly</span>
             </button>
 
             <button
               onClick={() => {
                 stopCamera();
-                setViewState('stand');
+                setViewState("stand");
               }}
               className="mt-2 text-xs text-white/50 hover:text-white underline cursor-pointer"
             >
@@ -489,32 +595,42 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
         </main>
       )}
 
-      {/* VIEW STATE 3: SELECT DISH LIST (The exact requested feature!) */}
-      {viewState === 'list' && (
+      {/* VIEW STATE 3: SELECT DISH LIST */}
+      {viewState === "list" && (
         <main className="relative z-10 w-full max-w-3xl mx-auto my-4 flex flex-col items-center">
           {/* Header of the list */}
           <div className="w-full flex items-center justify-between mb-4">
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold mb-1">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>QR Scanned: Table 04</span>
+                <span>QR Verified: Table 04</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-white">Select Dish to View in 3D</h1>
+              <h1 className="text-2xl sm:text-3xl font-black text-white">
+                Select Dish to View in 3D
+              </h1>
               <p className="text-xs sm:text-sm text-white/60">
-                Click any dish below to launch the live 3D camera experience!
+                Click any dish below to launch the live 3D AR camera experience!
               </p>
             </div>
 
-            <button
-              onClick={() => setViewState('stand')}
-              className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors cursor-pointer"
-              title="Rescan QR"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onEnterMenu}
+                className="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                Browse Menu
+              </button>
+              <button
+                onClick={() => setViewState("stand")}
+                className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors cursor-pointer"
+                title="Rescan QR"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
-          {/* Dish Cards List - Every single item clickable to look in 3D! */}
+          {/* Dish Cards List - Every single item clickable to view in 3D */}
           <div className="w-full space-y-3 pb-8">
             {RESTAURANT_MENU.map((dish) => (
               <div
@@ -524,9 +640,9 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
                   onSelectDish(dish);
                 }}
                 className={`group relative p-4 sm:p-5 rounded-3xl border transition-all duration-300 flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer shadow-lg active:scale-99 ${
-                  dish.id === 'classic-burger'
-                    ? 'bg-linear-to-r from-amber-950/60 via-neutral-900/80 to-neutral-900/90 border-amber-500/50 hover:border-amber-400 hover:shadow-[0_0_30px_rgba(245,158,11,0.25)]'
-                    : 'bg-white/5 hover:bg-white/10 border-white/10 hover:border-amber-400/40'
+                  dish.id === "classic-burger"
+                    ? "bg-linear-to-r from-amber-950/60 via-neutral-900/80 to-neutral-900/90 border-amber-500/50 hover:border-amber-400 hover:shadow-[0_0_30px_rgba(245,158,11,0.25)]"
+                    : "bg-white/5 hover:bg-white/10 border-white/10 hover:border-amber-400/40"
                 }`}
               >
                 {/* Left: Emoji, Name, Subtitle */}
@@ -587,11 +703,73 @@ export const TableQRCodeScreen: React.FC<TableQRCodeScreenProps> = ({
         </main>
       )}
 
+      {/* FULLSCREEN QR CODE MODAL (Perfect for displaying on a second phone or tablet!) */}
+      {isFullscreenQrOpen && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-sm bg-neutral-900 border border-white/20 rounded-3xl p-6 flex flex-col items-center text-center shadow-2xl">
+            <button
+              onClick={() => setIsFullscreenQrOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-bold mb-3">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Display on Phone / Monitor</span>
+            </div>
+
+            <h3 className="text-xl font-extrabold text-white mb-1">
+              {qrPreset === "burger"
+                ? "Classic Burger (₹249)"
+                : qrPreset === "pizza"
+                  ? "Margherita Pizza"
+                  : qrPreset === "sushi"
+                    ? "Salmon Sushi"
+                    : "Table #04 Dining Stand"}
+            </h3>
+            <p className="text-xs text-white/60 mb-4">
+              Hold another phone&apos;s camera up to this screen to scan!
+            </p>
+
+            {/* High-res White QR Box with Quiet Zone */}
+            <div className="w-68 h-68 p-4 bg-white rounded-2xl shadow-xl flex items-center justify-center">
+              {generatedQrDataUrl && (
+                <img
+                  src={generatedQrDataUrl}
+                  alt="High Resolution QR Code"
+                  className="w-full h-full object-contain"
+                />
+              )}
+            </div>
+
+            <div className="mt-4 flex gap-2 w-full">
+              <button
+                onClick={() => {
+                  soundManager.playClick();
+                  setIsFullscreenQrOpen(false);
+                  triggerScan();
+                }}
+                className="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-colors cursor-pointer"
+              >
+                Simulate Scan Here
+              </button>
+              <button
+                onClick={() => setIsFullscreenQrOpen(false)}
+                className="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-xs transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Footer Instructions */}
       <footer className="relative z-10 w-full max-w-4xl mx-auto pt-4 text-center text-xs text-white/40 border-t border-white/8">
         <div className="flex items-center justify-center gap-2">
           <ScanLine className="w-3.5 h-3.5 text-amber-400" />
-          <span>Flow: QR Code ➔ Select Dish from List ➔ Live 3D Camera with 👆 Rotate & 🤏 Scale</span>
+          <span>Real QR Code ➔ Point camera or click to view dish in 3D on table surface</span>
         </div>
       </footer>
     </div>

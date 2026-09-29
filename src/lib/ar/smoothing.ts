@@ -1,12 +1,12 @@
-import * as THREE from 'three';
-import { AR_CONFIG } from '../../config/ar.config';
+import * as THREE from "three";
+import { AR_CONFIG } from "../../config/ar.config";
 
 export class AnchorSmoother {
   private currentPos = new THREE.Vector3();
   private targetPos = new THREE.Vector3();
   private currentQuat = new THREE.Quaternion();
   private targetQuat = new THREE.Quaternion();
-  private currentEuler = new THREE.Euler(0, 0, 0, 'XYZ');
+  private currentEuler = new THREE.Euler(0, 0, 0, "XYZ");
   private currentScale = 1.0;
   private targetScale = 1.0;
   private isInitialized = false;
@@ -65,7 +65,7 @@ export class AnchorSmoother {
       }
     }
 
-    this.currentEuler.setFromQuaternion(this.currentQuat, 'XYZ');
+    this.currentEuler.setFromQuaternion(this.currentQuat, "XYZ");
 
     return {
       position: [this.currentPos.x, this.currentPos.y, this.currentPos.z],

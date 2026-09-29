@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Canvas } from '@react-three/fiber';
-import { PalmAnchor } from '../../types/palm';
-import { EffectConfig } from '../../types/effects';
-import { PalmAnchorObject } from './PalmAnchorObject';
-import { THREE_CONFIG } from '../../lib/three/threeConfig';
+import React from "react";
+import { Canvas } from "@react-three/fiber";
+import { PalmAnchor } from "../../types/palm";
+import { EffectConfig } from "../../types/effects";
+import { PalmAnchorObject } from "./PalmAnchorObject";
+import { THREE_CONFIG } from "../../lib/three/threeConfig";
 
 interface ARSceneProps {
   anchorRef: React.MutableRefObject<PalmAnchor>;
@@ -29,7 +29,7 @@ export const ARScene: React.FC<ARSceneProps> = ({
         gl={THREE_CONFIG.gl}
         dpr={[1, 1.5]}
         className="w-full h-full pointer-events-none"
-        style={{ pointerEvents: 'none', background: 'transparent' }}
+        style={{ pointerEvents: "none", background: "transparent" }}
       >
         {/* Transparent ambient & directional lights */}
         <ambientLight
@@ -41,11 +41,7 @@ export const ARScene: React.FC<ARSceneProps> = ({
           intensity={THREE_CONFIG.lighting.directionalIntensity}
           color={THREE_CONFIG.lighting.directionalColor}
         />
-        <directionalLight
-          position={[-3, 4, -2]}
-          intensity={0.6}
-          color="#a855f7"
-        />
+        <directionalLight position={[-3, 4, -2]} intensity={0.6} color="#a855f7" />
 
         {/* 3D Hologram anchor following the user's hand */}
         <PalmAnchorObject

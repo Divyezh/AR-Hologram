@@ -1,8 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
-export function useAnimationFrame(callback: (deltaMs: number, time: number) => void, enabled: boolean = true) {
+export function useAnimationFrame(
+  callback: (deltaMs: number, time: number) => void,
+  enabled: boolean = true
+) {
   const requestRef = useRef<number | null>(null);
   const previousTimeRef = useRef<number | null>(null);
   const callbackRef = useRef(callback);

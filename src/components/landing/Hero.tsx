@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { Sparkles, ArrowRight, ShieldCheck, Eye, Cpu, Zap } from 'lucide-react';
+import React from "react";
+import Link from "next/link";
+import { Sparkles, ArrowRight, ShieldCheck, Eye, Cpu, Zap } from "lucide-react";
 
 export const Hero: React.FC = () => {
   return (
@@ -27,7 +27,9 @@ export const Hero: React.FC = () => {
 
         {/* Subtitle */}
         <p className="text-base sm:text-lg md:text-xl text-neutral-400 max-w-2xl mb-10 leading-relaxed font-light">
-          Open your camera and show your hand. Real-time MediaPipe computer vision tracks your palm orientation, anchoring glowing mystic rings and animated 3D cyber companions in true WebGL space.
+          Open your camera and show your hand. Real-time MediaPipe computer vision tracks your palm
+          orientation, anchoring glowing mystic rings and animated 3D cyber companions in true WebGL
+          space.
         </p>
 
         {/* Action Buttons */}
@@ -54,25 +56,33 @@ export const Hero: React.FC = () => {
           <div className="p-4 rounded-2xl bg-neutral-950/60 border border-white/5 backdrop-blur-md">
             <Eye className="w-5 h-5 text-cyan-400 mb-2" />
             <h3 className="font-semibold text-white text-sm">21 Hand Landmarks</h3>
-            <p className="text-neutral-500 text-xs mt-1">Anatomical palm tracking with sub-millimeter precision.</p>
+            <p className="text-neutral-500 text-xs mt-1">
+              Anatomical palm tracking with sub-millimeter precision.
+            </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-neutral-950/60 border border-white/5 backdrop-blur-md">
             <Zap className="w-5 h-5 text-amber-400 mb-2" />
             <h3 className="font-semibold text-white text-sm">60 FPS WebGL</h3>
-            <p className="text-neutral-500 text-xs mt-1">Ref-based updates bypass React render overhead.</p>
+            <p className="text-neutral-500 text-xs mt-1">
+              Ref-based updates bypass React render overhead.
+            </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-neutral-950/60 border border-white/5 backdrop-blur-md">
             <Sparkles className="w-5 h-5 text-purple-400 mb-2" />
             <h3 className="font-semibold text-white text-sm">Procedural VFX</h3>
-            <p className="text-neutral-500 text-xs mt-1">Custom GLSL shaders, gyroscopic rings, and mana dust.</p>
+            <p className="text-neutral-500 text-xs mt-1">
+              Custom GLSL shaders, gyroscopic rings, and mana dust.
+            </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-neutral-950/60 border border-white/5 backdrop-blur-md">
             <ShieldCheck className="w-5 h-5 text-emerald-400 mb-2" />
             <h3 className="font-semibold text-white text-sm">100% Private</h3>
-            <p className="text-neutral-500 text-xs mt-1">All neural inference executes locally in your browser.</p>
+            <p className="text-neutral-500 text-xs mt-1">
+              All neural inference executes locally in your browser.
+            </p>
           </div>
         </div>
       </div>

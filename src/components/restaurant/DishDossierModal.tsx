@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { X, Flame, ShieldAlert, Sparkles, ChefHat, Check, ShoppingBag } from 'lucide-react';
-import { DishItem } from '../../data/restaurantMenu';
+import React from "react";
+import { X, Flame, ShieldAlert, Sparkles, ChefHat, Check, ShoppingBag } from "lucide-react";
+import { DishItem } from "../../data/restaurantMenu";
 
 interface DishDossierModalProps {
   dish: DishItem;
@@ -136,9 +136,9 @@ export const DishDossierModal: React.FC<DishDossierModalProps> = ({
         <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs leading-relaxed text-amber-200/90">
           <div className="flex items-center gap-1.5 font-semibold text-amber-300 mb-1">
             <ChefHat className="w-4 h-4" />
-            <span>Chef Marco's Culinary Note</span>
+            <span>Chef Marco&apos;s Culinary Note</span>
           </div>
-          <p className="italic">"{dish.chefNotes}"</p>
+          <p className="italic">&ldquo;{dish.chefNotes}&rdquo;</p>
         </div>
 
         {/* Modal Action CTA */}

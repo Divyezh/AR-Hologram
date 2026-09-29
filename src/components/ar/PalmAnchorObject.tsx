@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useRef } from 'react';
-import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
-import { PalmAnchor } from '../../types/palm';
-import { VFXRenderer } from '../vfx/VFXRenderer';
-import { CharacterRenderer } from '../characters/CharacterRenderer';
-import { EffectConfig } from '../../types/effects';
+import React, { useRef } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
+import { PalmAnchor } from "../../types/palm";
+import { VFXRenderer } from "../vfx/VFXRenderer";
+import { CharacterRenderer } from "../characters/CharacterRenderer";
+import { EffectConfig } from "../../types/effects";
 
 interface PalmAnchorObjectProps {
   anchorRef: React.MutableRefObject<PalmAnchor>;
@@ -44,11 +44,7 @@ export const PalmAnchorObject: React.FC<PalmAnchorObjectProps> = ({
     rootGroupRef.current.visible = true;
 
     // Direct 60fps matrix update without React state
-    rootGroupRef.current.position.set(
-      anchor.position[0],
-      anchor.position[1],
-      anchor.position[2]
-    );
+    rootGroupRef.current.position.set(anchor.position[0], anchor.position[1], anchor.position[2]);
 
     rootGroupRef.current.quaternion.set(
       anchor.quaternion[0],
@@ -78,9 +74,11 @@ export const PalmAnchorObject: React.FC<PalmAnchorObjectProps> = ({
         <VFXRenderer effect={effect} particlesEnabled={particlesEnabled} />
 
         {/* 3D Character positioned on palm (only when in character mode and NOT power effects) */}
-        {characterId !== 'pure-vfx' && effect.type !== 'naruto' && effect.type !== 'doctor-strange' && (
-          <CharacterRenderer characterId={characterId} animationName={animationName} />
-        )}
+        {characterId !== "pure-vfx" &&
+          effect.type !== "naruto" &&
+          effect.type !== "doctor-strange" && (
+            <CharacterRenderer characterId={characterId} animationName={animationName} />
+          )}
       </group>
     </group>
   );

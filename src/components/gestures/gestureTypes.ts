@@ -1,1 +1,1 @@
-export * from '../../types/gestures';
+export * from "../../types/gestures";

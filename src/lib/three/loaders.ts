@@ -1,4 +1,4 @@
-import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader, GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 const modelCache = new Map<string, GLTF>();
 const loadingPromises = new Map<string, Promise<GLTF>>();

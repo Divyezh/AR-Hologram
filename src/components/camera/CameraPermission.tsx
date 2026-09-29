@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Camera, ShieldCheck, Sparkles, RefreshCw } from 'lucide-react';
+import React from "react";
+import { Camera, ShieldCheck, Sparkles, RefreshCw } from "lucide-react";
 
 interface CameraPermissionProps {
   onGrantPermission: () => void;
@@ -27,12 +27,10 @@ export const CameraPermission: React.FC<CameraPermissionProps> = ({
           <Camera className="w-7 h-7" />
         </div>
 
-        <h2 className="text-2xl font-semibold tracking-[-0.02em] text-white mb-2">
-          Enable Camera
-        </h2>
+        <h2 className="text-2xl font-semibold tracking-[-0.02em] text-white mb-2">Enable Camera</h2>
         <p className="text-xs text-white/60 font-light leading-relaxed mb-6">
-          AR Hologram Studio processes your video feed locally in your browser using MediaPipe neural networks.
-          No video or audio is ever recorded or uploaded.
+          AR Hologram Studio processes your video feed locally in your browser using MediaPipe
+          neural networks. No video or audio is ever recorded or uploaded.
         </p>
 
         {/* Privacy Pill */}

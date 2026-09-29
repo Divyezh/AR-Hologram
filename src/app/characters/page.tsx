@@ -1,12 +1,12 @@
-import { Navbar } from '../../components/landing/Navbar';
-import { Footer } from '../../components/landing/Footer';
-import { CHARACTERS } from '../../data/characters';
-import Link from 'next/link';
-import { Bot, Sparkles, ArrowRight, Play } from 'lucide-react';
+import { Navbar } from "../../components/landing/Navbar";
+import { Footer } from "../../components/landing/Footer";
+import { CHARACTERS } from "../../data/characters";
+import Link from "next/link";
+import { Bot, Sparkles, ArrowRight, Play } from "lucide-react";
 
 export const metadata = {
-  title: '3D Characters - AR Hologram Studio',
-  description: 'Interactive animated 3D GLB characters anchored to your palm in augmented reality.',
+  title: "3D Characters - AR Hologram Studio",
+  description: "Interactive animated 3D GLB characters anchored to your palm in augmented reality.",
 };
 
 export default function CharactersPage() {
@@ -23,7 +23,9 @@ export default function CharactersPage() {
             Holographic Companions
           </h1>
           <p className="text-neutral-400 text-sm sm:text-base leading-relaxed">
-            Select an animated character to stand or sit upon the holographic magic ring. Characters inherit your palm&apos;s real-time position and orientation with smooth kinematic interpolation.
+            Select an animated character to stand or sit upon the holographic magic ring. Characters
+            inherit your palm&apos;s real-time position and orientation with smooth kinematic
+            interpolation.
           </p>
         </div>
 
@@ -39,7 +41,7 @@ export default function CharactersPage() {
                     {char.category}
                   </span>
                   <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-white/10 text-neutral-300">
-                    {char.type === 'glb' ? 'GLB Model' : 'Procedural Mesh'}
+                    {char.type === "glb" ? "GLB Model" : "Procedural Mesh"}
                   </span>
                 </div>
 
@@ -47,7 +49,9 @@ export default function CharactersPage() {
                 <p className="text-neutral-400 text-sm leading-relaxed mb-6">{char.description}</p>
 
                 <div className="mb-6">
-                  <span className="text-xs text-neutral-500 block mb-2 font-medium">Available Actions:</span>
+                  <span className="text-xs text-neutral-500 block mb-2 font-medium">
+                    Available Actions:
+                  </span>
                   <div className="flex flex-wrap gap-1.5">
                     {char.availableAnimations.map((anim) => (
                       <span

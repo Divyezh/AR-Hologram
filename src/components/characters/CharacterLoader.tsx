@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useRef } from 'react';
-import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
+import React, { useRef } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
 
 interface HologramSpinnerProps {
   color?: string;
@@ -10,7 +10,7 @@ interface HologramSpinnerProps {
 }
 
 export const HologramSpinner: React.FC<HologramSpinnerProps> = ({
-  color = '#06b6d4',
+  color = "#06b6d4",
   size = 0.4,
 }) => {
   const groupRef = useRef<THREE.Group | null>(null);

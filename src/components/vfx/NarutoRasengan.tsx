@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useRef, useEffect, useMemo, useState } from 'react';
-import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
-import { EffectConfig } from '../../types/effects';
+import React, { useRef, useEffect, useMemo, useState } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
+import { EffectConfig } from "../../types/effects";
 
 interface NarutoRasenganProps {
   effect: EffectConfig;
@@ -102,25 +102,25 @@ export const NarutoRasengan: React.FC<NarutoRasenganProps> = ({
 
   // Initialize and manage HTML5 video element with reliable autoplay and DOM attachment
   useEffect(() => {
-    const video = document.createElement('video');
-    video.src = '/naruto-power.mp4';
-    video.crossOrigin = 'anonymous';
+    const video = document.createElement("video");
+    video.src = "/naruto-power.mp4";
+    video.crossOrigin = "anonymous";
     video.playsInline = true;
     video.muted = true;
     video.autoplay = true;
     video.loop = true;
-    video.preload = 'auto';
-    video.setAttribute('playsinline', 'true');
-    video.setAttribute('webkit-playsinline', 'true');
+    video.preload = "auto";
+    video.setAttribute("playsinline", "true");
+    video.setAttribute("webkit-playsinline", "true");
 
     // Attach off-screen to DOM so mobile & Chromium engines decode video smoothly at 60fps
-    video.style.position = 'fixed';
-    video.style.top = '-9999px';
-    video.style.left = '-9999px';
-    video.style.width = '1px';
-    video.style.height = '1px';
-    video.style.opacity = '0';
-    video.style.pointerEvents = 'none';
+    video.style.position = "fixed";
+    video.style.top = "-9999px";
+    video.style.left = "-9999px";
+    video.style.width = "1px";
+    video.style.height = "1px";
+    video.style.opacity = "0";
+    video.style.pointerEvents = "none";
     document.body.appendChild(video);
     videoRef.current = video;
 
@@ -138,7 +138,7 @@ export const NarutoRasengan: React.FC<NarutoRasenganProps> = ({
       video.currentTime = 0.8;
       video.play().catch(() => {});
     };
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
 
     // Seamless loop avoiding the dead 0-0.75s green gap
     const handleTimeUpdate = () => {
@@ -146,13 +146,13 @@ export const NarutoRasengan: React.FC<NarutoRasenganProps> = ({
         video.currentTime = 0.8;
       }
     };
-    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener("timeupdate", handleTimeUpdate);
 
     const handleEnded = () => {
       video.currentTime = 0.8;
       video.play().catch(() => {});
     };
-    video.addEventListener('ended', handleEnded);
+    video.addEventListener("ended", handleEnded);
 
     video.play().catch(() => {
       // If browser blocks unmuted autoplay, start muted and unmute upon user touch/click
@@ -168,19 +168,19 @@ export const NarutoRasengan: React.FC<NarutoRasenganProps> = ({
         video.play().catch(() => {});
       }
     };
-    window.addEventListener('touchstart', unlockHandler, { passive: true });
-    window.addEventListener('click', unlockHandler, { passive: true });
-    window.addEventListener('pointerdown', unlockHandler, { passive: true });
+    window.addEventListener("touchstart", unlockHandler, { passive: true });
+    window.addEventListener("click", unlockHandler, { passive: true });
+    window.addEventListener("pointerdown", unlockHandler, { passive: true });
 
     return () => {
-      window.removeEventListener('touchstart', unlockHandler);
-      window.removeEventListener('click', unlockHandler);
-      window.removeEventListener('pointerdown', unlockHandler);
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-      video.removeEventListener('ended', handleEnded);
+      window.removeEventListener("touchstart", unlockHandler);
+      window.removeEventListener("click", unlockHandler);
+      window.removeEventListener("pointerdown", unlockHandler);
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+      video.removeEventListener("ended", handleEnded);
       video.pause();
-      video.removeAttribute('src');
+      video.removeAttribute("src");
       video.load();
       if (video.parentNode) {
         video.parentNode.removeChild(video);
@@ -224,17 +224,17 @@ export const NarutoRasengan: React.FC<NarutoRasenganProps> = ({
 
   // Soft circular glow particle texture (replaces jagged white squares)
   const particleTexture = useMemo(() => {
-    if (typeof document === 'undefined') return null;
-    const canvas = document.createElement('canvas');
+    if (typeof document === "undefined") return null;
+    const canvas = document.createElement("canvas");
     canvas.width = 64;
     canvas.height = 64;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (ctx) {
       const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      grad.addColorStop(0.25, 'rgba(125, 211, 252, 0.9)');
-      grad.addColorStop(0.6, 'rgba(2, 132, 199, 0.35)');
-      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      grad.addColorStop(0, "rgba(255, 255, 255, 1)");
+      grad.addColorStop(0.25, "rgba(125, 211, 252, 0.9)");
+      grad.addColorStop(0.6, "rgba(2, 132, 199, 0.35)");
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 64, 64);
     }
@@ -313,7 +313,7 @@ export const NarutoRasengan: React.FC<NarutoRasenganProps> = ({
     // 4. Update vortex chakra particles
     if (particlesRef.current) {
       const geom = particlesRef.current.geometry;
-      const posAttr = geom.getAttribute('position') as THREE.BufferAttribute;
+      const posAttr = geom.getAttribute("position") as THREE.BufferAttribute;
       const arr = posAttr.array as Float32Array;
 
       for (let i = 0; i < particleCount; i++) {

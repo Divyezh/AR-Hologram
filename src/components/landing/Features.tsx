@@ -1,45 +1,45 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Compass, Sparkles, Layers, Box, Cpu, Smartphone } from 'lucide-react';
+import React from "react";
+import { Compass, Sparkles, Layers, Box, Cpu, Smartphone } from "lucide-react";
 
 export const Features: React.FC = () => {
   const features = [
     {
       icon: <Compass className="w-6 h-6 text-cyan-400" />,
-      title: 'Full 6-DOF Palm Anchor',
+      title: "Full 6-DOF Palm Anchor",
       description:
-        'Calculates real-time 3D position, normal surface vector, and quaternion rotation across wrist and knuckle joints.',
+        "Calculates real-time 3D position, normal surface vector, and quaternion rotation across wrist and knuckle joints.",
     },
     {
       icon: <Layers className="w-6 h-6 text-amber-400" />,
-      title: 'Doctor Strange Style Rings',
+      title: "Doctor Strange Style Rings",
       description:
-        'Multi-layer concentric gyroscopic rings, inscribed ancient runes, and pulsing energy shaders rendered on GPU.',
+        "Multi-layer concentric gyroscopic rings, inscribed ancient runes, and pulsing energy shaders rendered on GPU.",
     },
     {
       icon: <Box className="w-6 h-6 text-purple-400" />,
-      title: 'Animated 3D Characters',
+      title: "Animated 3D Characters",
       description:
-        'GLB character models and procedural holograms with real-time skeletal animations (Dance, Jump, Wave, Walk).',
+        "GLB character models and procedural holograms with real-time skeletal animations (Dance, Jump, Wave, Walk).",
     },
     {
       icon: <Cpu className="w-6 h-6 text-emerald-400" />,
-      title: 'Adaptive Smoothing Math',
+      title: "Adaptive Smoothing Math",
       description:
-        'Dual exponential lerp and quaternion slerp suppress tracking jitters while preserving high-speed hand responsiveness.',
+        "Dual exponential lerp and quaternion slerp suppress tracking jitters while preserving high-speed hand responsiveness.",
     },
     {
       icon: <Sparkles className="w-6 h-6 text-pink-400" />,
-      title: 'Kinetic Gesture Engine',
+      title: "Kinetic Gesture Engine",
       description:
-        'Interprets open palm, fist, peace, pinch, and point gestures to trigger powers, animations, and holographic scale.',
+        "Interprets open palm, fist, peace, pinch, and point gestures to trigger powers, animations, and holographic scale.",
     },
     {
       icon: <Smartphone className="w-6 h-6 text-blue-400" />,
-      title: 'Mobile-Optimized Experience',
+      title: "Mobile-Optimized Experience",
       description:
-        'Responsive viewport calculations adjust coordinate mapping across mobile portrait and desktop landscape.',
+        "Responsive viewport calculations adjust coordinate mapping across mobile portrait and desktop landscape.",
     },
   ];
 
@@ -54,7 +54,8 @@ export const Features: React.FC = () => {
             Engineered For Pure Real-Time Immersion
           </h3>
           <p className="text-neutral-400 mt-4 text-sm sm:text-base">
-            No mouse simulation. No predetermined paths. A true computer-vision pipeline running directly in client-side WebGL.
+            No mouse simulation. No predetermined paths. A true computer-vision pipeline running
+            directly in client-side WebGL.
           </p>
         </div>
 

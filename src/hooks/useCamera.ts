@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { CameraState, CameraFacingMode, CameraDeviceInfo } from '../types/camera';
-import { CAMERA_CONFIG } from '../config/camera.config';
-import { getAvailableCameras, parseCameraError } from '../lib/utils/browser';
-import { isMediaDevicesSupported } from '../lib/utils/device';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { CameraState, CameraFacingMode, CameraErrorType } from "../types/camera";
+import { CAMERA_CONFIG } from "../config/camera.config";
+import { getAvailableCameras, parseCameraError } from "../lib/utils/browser";
+import { isMediaDevicesSupported } from "../lib/utils/device";
 
 export function useCamera() {
   const [state, setState] = useState<CameraState>({
-    status: 'idle',
+    status: "idle",
     stream: null,
     videoElement: null,
     facingMode: CAMERA_CONFIG.defaultFacingMode,
@@ -38,7 +38,7 @@ export function useCamera() {
 
     setState((prev) => ({
       ...prev,
-      status: 'idle',
+      status: "idle",
       stream: null,
       error: null,
       errorType: null,
@@ -51,9 +51,9 @@ export function useCamera() {
       if (!isMediaDevicesSupported()) {
         setState((prev) => ({
           ...prev,
-          status: 'unsupported',
-          error: 'Webcam is not supported in this browser environment.',
-          errorType: 'UnsupportedError',
+          status: "unsupported",
+          error: "Webcam is not supported in this browser environment.",
+          errorType: "UnsupportedError",
         }));
         return;
       }
@@ -65,11 +65,11 @@ export function useCamera() {
       }
 
       const facing = preferredFacingMode || state.facingMode;
-      const isMirrored = facing === 'user';
+      const isMirrored = facing === "user";
 
       setState((prev) => ({
         ...prev,
-        status: 'requesting',
+        status: "requesting",
         facingMode: facing,
         isMirrored,
         error: null,
@@ -109,7 +109,7 @@ export function useCamera() {
 
         setState((prev) => ({
           ...prev,
-          status: 'active',
+          status: "active",
           stream: mediaStream,
           facingMode: facing,
           isMirrored,
@@ -123,10 +123,10 @@ export function useCamera() {
         const parsed = parseCameraError(err);
         setState((prev) => ({
           ...prev,
-          status: 'error',
+          status: "error",
           stream: null,
           error: parsed.message,
-          errorType: parsed.type as any,
+          errorType: parsed.type as CameraErrorType,
         }));
       }
     },
@@ -135,7 +135,7 @@ export function useCamera() {
 
   // Toggle front/rear camera
   const toggleFacingMode = useCallback(() => {
-    const nextFacing: CameraFacingMode = state.facingMode === 'user' ? 'environment' : 'user';
+    const nextFacing: CameraFacingMode = state.facingMode === "user" ? "environment" : "user";
     startCamera(nextFacing);
   }, [state.facingMode, startCamera]);
 
@@ -149,7 +149,7 @@ export function useCamera() {
     videoRef.current = element;
     if (element && streamRef.current) {
       element.srcObject = streamRef.current;
-      element.play().catch((e) => console.warn('Autoplay error:', e));
+      element.play().catch((e) => console.warn("Autoplay error:", e));
     }
   }, []);
 

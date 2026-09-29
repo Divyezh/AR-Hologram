@@ -1,14 +1,19 @@
-'use client';
+"use client";
 
-import dynamic from 'next/dynamic';
-import { LoadingScreen } from '../../components/ui/LoadingScreen';
+import dynamic from "next/dynamic";
+import { LoadingScreen } from "../../components/ui/LoadingScreen";
 
 // Dynamic import with ssr: false ensures WebGL & MediaPipe only load in browser
 const StudioLayout = dynamic(
-  () => import('../../components/studio/StudioLayout').then((mod) => mod.StudioLayout),
+  () => import("../../components/studio/StudioLayout").then((mod) => mod.StudioLayout),
   {
     ssr: false,
-    loading: () => <LoadingScreen title="Loading AR Hologram Studio" subtitle="Initializing WebGL & Computer Vision..." />,
+    loading: () => (
+      <LoadingScreen
+        title="Loading AR Hologram Studio"
+        subtitle="Initializing WebGL & Computer Vision..."
+      />
+    ),
   }
 );
 

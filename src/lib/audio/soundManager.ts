@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Howl, Howler } from 'howler';
+import { Howl, Howler } from "howler";
 
 // Utility to create a procedural WAV Data URI in the browser
 function createWavDataUri(sampleRate: number, samples: Float32Array): string {
@@ -14,10 +14,10 @@ function createWavDataUri(sampleRate: number, samples: Float32Array): string {
     }
   };
 
-  writeString(0, 'RIFF');
+  writeString(0, "RIFF");
   view.setUint32(4, 36 + samples.length * 2, true);
-  writeString(8, 'WAVE');
-  writeString(12, 'fmt ');
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
   view.setUint32(16, 16, true); // PCM chunk size
   view.setUint16(20, 1, true); // Linear PCM
   view.setUint16(22, 1, true); // Mono
@@ -25,7 +25,7 @@ function createWavDataUri(sampleRate: number, samples: Float32Array): string {
   view.setUint32(28, sampleRate * 2, true);
   view.setUint16(32, 2, true); // Block align
   view.setUint16(34, 16, true); // 16-bit
-  writeString(36, 'data');
+  writeString(36, "data");
   view.setUint32(40, samples.length * 2, true);
 
   // Write samples
@@ -37,11 +37,11 @@ function createWavDataUri(sampleRate: number, samples: Float32Array): string {
   }
 
   const bytes = new Uint8Array(buffer);
-  let binary = '';
+  let binary = "";
   for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
-  return 'data:audio/wav;base64,' + btoa(binary);
+  return "data:audio/wav;base64," + btoa(binary);
 }
 
 // Generate sound waveforms
@@ -71,7 +71,9 @@ function generateFireSoundUri(): string {
   const totalSamples = Math.floor(sampleRate * duration);
   const samples = new Float32Array(totalSamples);
 
-  let b0 = 0, b1 = 0, b2 = 0;
+  let b0 = 0,
+    b1 = 0,
+    b2 = 0;
   for (let i = 0; i < totalSamples; i++) {
     const t = i / sampleRate;
     // Pink / Brown noise filter for deep fire roar
@@ -197,11 +199,11 @@ class ARSoundManager {
   private activeLoop: Howl | null = null;
 
   public init() {
-    if (this.isInitialized || typeof window === 'undefined') return;
+    if (this.isInitialized || typeof window === "undefined") return;
 
     try {
       this.mandalaSound = new Howl({
-        src: ['/audio/doctor-strange.mp3', generateMandalaSoundUri()],
+        src: ["/audio/doctor-strange.mp3", generateMandalaSoundUri()],
         loop: true,
         volume: 0.85,
         html5: true,
@@ -214,7 +216,7 @@ class ARSoundManager {
       });
 
       this.narutoSound = new Howl({
-        src: ['/audio/naruto-rasengan.mp3'],
+        src: ["/audio/naruto-rasengan.mp3"],
         loop: true,
         volume: 0.85,
         html5: true,
@@ -247,7 +249,7 @@ class ARSoundManager {
 
       this.isInitialized = true;
     } catch (err) {
-      console.warn('Howler sound initialization error:', err);
+      console.warn("Howler sound initialization error:", err);
     }
   }
 
@@ -281,15 +283,16 @@ class ARSoundManager {
     this.resetSound?.play();
   }
 
-  public startEffectSound(soundType: 'mandala' | 'fire' | 'cosmic' | 'lightning' | 'naruto') {
+  public startEffectSound(soundType: "mandala" | "fire" | "cosmic" | "lightning" | "naruto") {
     if (this.isMuted) return;
     this.init();
 
-    const targetLoop = soundType === 'naruto'
-      ? this.narutoSound
-      : soundType === 'fire'
-        ? this.fireSound
-        : this.mandalaSound;
+    const targetLoop =
+      soundType === "naruto"
+        ? this.narutoSound
+        : soundType === "fire"
+          ? this.fireSound
+          : this.mandalaSound;
 
     if (this.activeLoop === targetLoop && this.activeLoop?.playing()) {
       return;
@@ -304,7 +307,14 @@ class ARSoundManager {
     if (targetLoop) {
       targetLoop.volume(0);
       targetLoop.play();
-      const targetVolume = soundType === 'naruto' ? 0.75 : soundType === 'mandala' ? 0.8 : soundType === 'fire' ? 0.6 : 0.45;
+      const targetVolume =
+        soundType === "naruto"
+          ? 0.75
+          : soundType === "mandala"
+            ? 0.8
+            : soundType === "fire"
+              ? 0.6
+              : 0.45;
       targetLoop.fade(0, targetVolume, 400);
       this.activeLoop = targetLoop;
     }

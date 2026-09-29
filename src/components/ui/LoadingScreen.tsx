@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Loader2 } from 'lucide-react';
+import React from "react";
+import { Loader2 } from "lucide-react";
 
 interface LoadingScreenProps {
   title?: string;
@@ -9,8 +9,8 @@ interface LoadingScreenProps {
 }
 
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({
-  title = 'Initializing AR Hologram Engine...',
-  subtitle = 'Loading MediaPipe Hand Landmarker & WebGL Shaders',
+  title = "Initializing AR Hologram Engine...",
+  subtitle = "Loading MediaPipe Hand Landmarker & WebGL Shaders",
 }) => {
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black text-white">

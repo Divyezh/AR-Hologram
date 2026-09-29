@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { EFFECTS } from '../../data/effects';
-import { CHARACTERS } from '../../data/characters';
-import { Shield, Flame, Wand2, Bot, Play, Sliders, X, Wind } from 'lucide-react';
-import { soundManager } from '../../lib/audio/soundManager';
+import React, { useState } from "react";
+import { EFFECTS } from "../../data/effects";
+import { CHARACTERS } from "../../data/characters";
+import { Shield, Flame, Wand2, Bot, Play, Sliders, X, Wind } from "lucide-react";
+import { soundManager } from "../../lib/audio/soundManager";
 
 interface StudioControlsProps {
   selectedCharacterId: string;
@@ -19,7 +19,7 @@ interface StudioControlsProps {
   onSetIntensity: (val: number) => void;
 }
 
-type TrayMode = 'none' | 'vfx' | 'character' | 'animation' | 'settings';
+type TrayMode = "none" | "vfx" | "character" | "animation" | "settings";
 
 export const StudioControls: React.FC<StudioControlsProps> = ({
   selectedCharacterId,
@@ -33,11 +33,11 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
   onToggleParticles,
   onSetIntensity,
 }) => {
-  const [activeTray, setActiveTray] = useState<TrayMode>('none');
+  const [activeTray, setActiveTray] = useState<TrayMode>("none");
 
   const toggleTray = (mode: TrayMode) => {
     soundManager.playClick();
-    setActiveTray(activeTray === mode ? 'none' : mode);
+    setActiveTray(activeTray === mode ? "none" : mode);
   };
 
   const currentChar = CHARACTERS.find((c) => c.id === selectedCharacterId) || CHARACTERS[0];
@@ -46,17 +46,17 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
   return (
     <div className="absolute bottom-6 left-0 right-0 z-20 flex flex-col items-center pointer-events-none px-4">
       {/* 1. Floating Squircle Selection Tray (Opens on top of dock) */}
-      {activeTray !== 'none' && (
+      {activeTray !== "none" && (
         <div className="mb-3 w-full max-w-md p-4 rounded-4xl bg-black/60 backdrop-blur-3xl border border-white/16 shadow-[0_16px_40px_rgba(0,0,0,0.6)] pointer-events-auto animate-in fade-in zoom-in-95 duration-200">
           <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/8">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-white/80">
-              {activeTray === 'vfx' && 'Choose AR Effect'}
-              {activeTray === 'character' && 'Choose 3D Avatar'}
-              {activeTray === 'animation' && 'Avatar Actions'}
-              {activeTray === 'settings' && 'VFX Tuning'}
+              {activeTray === "vfx" && "Choose AR Effect"}
+              {activeTray === "character" && "Choose 3D Avatar"}
+              {activeTray === "animation" && "Avatar Actions"}
+              {activeTray === "settings" && "VFX Tuning"}
             </span>
             <button
-              onClick={() => setActiveTray('none')}
+              onClick={() => setActiveTray("none")}
               className="p-1 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
@@ -64,7 +64,7 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
           </div>
 
           {/* VFX Tray */}
-          {activeTray === 'vfx' && (
+          {activeTray === "vfx" && (
             <div className="grid grid-cols-2 gap-2">
               {EFFECTS.map((effect) => {
                 const isSelected = selectedEffectId === effect.id;
@@ -73,28 +73,38 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
                     key={effect.id}
                     onClick={() => {
                       onSelectEffect(effect.id);
-                      setActiveTray('none');
+                      setActiveTray("none");
                     }}
                     className={`flex items-center gap-2.5 p-3 rounded-2xl text-left transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-white text-black shadow-md'
-                        : 'bg-white/5 hover:bg-white/10 text-white/80 border border-white/8'
+                        ? "bg-white text-black shadow-md"
+                        : "bg-white/5 hover:bg-white/10 text-white/80 border border-white/8"
                     }`}
                   >
                     <div
                       className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${
-                        isSelected ? 'bg-black text-white' : 'bg-white/10 text-amber-300'
+                        isSelected ? "bg-black text-white" : "bg-white/10 text-amber-300"
                       }`}
                     >
-                      {effect.type === 'naruto' && <Wind className="w-4 h-4 text-cyan-400" />}
-                      {effect.type === 'doctor-strange' && <Shield className="w-4 h-4" />}
-                      {effect.type === 'fireball' && <Flame className="w-4 h-4 text-orange-400" />}
-                      {effect.type === 'vortex' && <Wand2 className="w-4 h-4 text-purple-300" />}
+                      {effect.type === "naruto" && <Wind className="w-4 h-4 text-cyan-400" />}
+                      {effect.type === "doctor-strange" && <Shield className="w-4 h-4" />}
+                      {effect.type === "fireball" && <Flame className="w-4 h-4 text-orange-400" />}
+                      {effect.type === "vortex" && <Wand2 className="w-4 h-4 text-purple-300" />}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-semibold truncate leading-tight">{effect.name}</span>
-                      <span className={`text-[10px] truncate ${isSelected ? 'text-neutral-600' : 'text-white/40'}`}>
-                        {effect.type === 'naruto' ? 'Chakra Vortex' : effect.type === 'doctor-strange' ? 'Tao Mandala' : effect.type === 'fireball' ? 'Flame Core' : 'Vortex'}
+                      <span className="text-xs font-semibold truncate leading-tight">
+                        {effect.name}
+                      </span>
+                      <span
+                        className={`text-[10px] truncate ${isSelected ? "text-neutral-600" : "text-white/40"}`}
+                      >
+                        {effect.type === "naruto"
+                          ? "Chakra Vortex"
+                          : effect.type === "doctor-strange"
+                            ? "Tao Mandala"
+                            : effect.type === "fireball"
+                              ? "Flame Core"
+                              : "Vortex"}
                       </span>
                     </div>
                   </button>
@@ -104,7 +114,7 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
           )}
 
           {/* Character Tray */}
-          {activeTray === 'character' && (
+          {activeTray === "character" && (
             <div className="grid grid-cols-2 gap-2">
               {CHARACTERS.map((char) => {
                 const isSelected = selectedCharacterId === char.id;
@@ -113,25 +123,29 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
                     key={char.id}
                     onClick={() => {
                       onSelectCharacter(char.id);
-                      setActiveTray('none');
+                      setActiveTray("none");
                     }}
                     className={`flex items-center gap-2.5 p-3 rounded-2xl text-left transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-white text-black shadow-md'
-                        : 'bg-white/5 hover:bg-white/10 text-white/80 border border-white/8'
+                        ? "bg-white text-black shadow-md"
+                        : "bg-white/5 hover:bg-white/10 text-white/80 border border-white/8"
                     }`}
                   >
                     <div
                       className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${
-                        isSelected ? 'bg-black text-white' : 'bg-white/10'
+                        isSelected ? "bg-black text-white" : "bg-white/10"
                       }`}
-                      style={{ color: isSelected ? '#ffffff' : char.accentColor }}
+                      style={{ color: isSelected ? "#ffffff" : char.accentColor }}
                     >
                       <Bot className="w-4 h-4" />
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-semibold truncate leading-tight">{char.name}</span>
-                      <span className={`text-[10px] truncate ${isSelected ? 'text-neutral-600' : 'text-white/40'}`}>
+                      <span className="text-xs font-semibold truncate leading-tight">
+                        {char.name}
+                      </span>
+                      <span
+                        className={`text-[10px] truncate ${isSelected ? "text-neutral-600" : "text-white/40"}`}
+                      >
                         {char.type.toUpperCase()}
                       </span>
                     </div>
@@ -142,7 +156,7 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
           )}
 
           {/* Animation Tray */}
-          {activeTray === 'animation' && (
+          {activeTray === "animation" && (
             <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
               {currentChar.availableAnimations.map((anim) => {
                 const isSelected = selectedAnimationId === anim;
@@ -151,12 +165,12 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
                     key={anim}
                     onClick={() => {
                       onSelectAnimation(anim);
-                      setActiveTray('none');
+                      setActiveTray("none");
                     }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-white text-black shadow-sm'
-                        : 'bg-white/8 hover:bg-white/15 text-white/80'
+                        ? "bg-white text-black shadow-sm"
+                        : "bg-white/8 hover:bg-white/15 text-white/80"
                     }`}
                   >
                     <Play className="w-2.5 h-2.5 fill-current" />
@@ -168,7 +182,7 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
           )}
 
           {/* Settings Tray */}
-          {activeTray === 'settings' && (
+          {activeTray === "settings" && (
             <div className="space-y-3 text-xs text-white/80 pt-1">
               <div className="flex items-center justify-between">
                 <span>VFX Glow Intensity</span>
@@ -181,17 +195,19 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
                   onChange={(e) => onSetIntensity(parseFloat(e.target.value))}
                   className="w-32 accent-white cursor-pointer"
                 />
-                <span className="font-mono text-white/90 w-8 text-right">{effectsIntensity.toFixed(1)}x</span>
+                <span className="font-mono text-white/90 w-8 text-right">
+                  {effectsIntensity.toFixed(1)}x
+                </span>
               </div>
               <div className="flex items-center justify-between pt-1 border-t border-white/8">
                 <span>Ember & Spark Particles</span>
                 <button
                   onClick={onToggleParticles}
                   className={`px-3 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors ${
-                    particlesEnabled ? 'bg-white text-black' : 'bg-white/10 text-white/50'
+                    particlesEnabled ? "bg-white text-black" : "bg-white/10 text-white/50"
                   }`}
                 >
-                  {particlesEnabled ? 'On' : 'Off'}
+                  {particlesEnabled ? "On" : "Off"}
                 </button>
               </div>
             </div>
@@ -203,19 +219,19 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
       <nav className="flex items-center gap-2 p-1.5 rounded-full bg-black/60 backdrop-blur-3xl border border-white/16 shadow-[0_12px_36px_rgba(0,0,0,0.5)] pointer-events-auto">
         {/* Effect Selector Button */}
         <button
-          onClick={() => toggleTray('vfx')}
+          onClick={() => toggleTray("vfx")}
           title="AR Shield / Fireball / Jutsu Effect"
           className={`flex items-center gap-2 px-3.5 py-2 rounded-full transition-all duration-200 cursor-pointer ${
-            activeTray === 'vfx'
-              ? 'bg-white text-black shadow-sm'
-              : 'hover:bg-white/10 text-white/80 hover:text-white'
+            activeTray === "vfx"
+              ? "bg-white text-black shadow-sm"
+              : "hover:bg-white/10 text-white/80 hover:text-white"
           }`}
         >
-          {currentEffect.type === 'naruto' ? (
+          {currentEffect.type === "naruto" ? (
             <Wind className="w-4 h-4 text-cyan-400" />
-          ) : currentEffect.type === 'doctor-strange' ? (
+          ) : currentEffect.type === "doctor-strange" ? (
             <Shield className="w-4 h-4 text-amber-400" />
-          ) : currentEffect.type === 'fireball' ? (
+          ) : currentEffect.type === "fireball" ? (
             <Flame className="w-4 h-4 text-orange-400" />
           ) : (
             <Wand2 className="w-4 h-4 text-purple-300" />
@@ -227,12 +243,12 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
 
         {/* Character Selector Button */}
         <button
-          onClick={() => toggleTray('character')}
+          onClick={() => toggleTray("character")}
           title="3D Avatar"
           className={`flex items-center gap-2 px-3.5 py-2 rounded-full transition-all duration-200 cursor-pointer ${
-            activeTray === 'character'
-              ? 'bg-white text-black shadow-sm'
-              : 'hover:bg-white/10 text-white/80 hover:text-white'
+            activeTray === "character"
+              ? "bg-white text-black shadow-sm"
+              : "hover:bg-white/10 text-white/80 hover:text-white"
           }`}
         >
           <Bot className="w-4 h-4 text-cyan-300" />
@@ -243,12 +259,12 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
 
         {/* Action Button */}
         <button
-          onClick={() => toggleTray('animation')}
+          onClick={() => toggleTray("animation")}
           title="Avatar Action"
           className={`p-2 rounded-full transition-all duration-200 cursor-pointer ${
-            activeTray === 'animation'
-              ? 'bg-white text-black shadow-sm'
-              : 'hover:bg-white/10 text-white/80 hover:text-white'
+            activeTray === "animation"
+              ? "bg-white text-black shadow-sm"
+              : "hover:bg-white/10 text-white/80 hover:text-white"
           }`}
         >
           <Play className="w-4 h-4 fill-current ml-0.5" />
@@ -256,12 +272,12 @@ export const StudioControls: React.FC<StudioControlsProps> = ({
 
         {/* Settings Button */}
         <button
-          onClick={() => toggleTray('settings')}
+          onClick={() => toggleTray("settings")}
           title="Settings & Tuning"
           className={`p-2 rounded-full transition-all duration-200 cursor-pointer ${
-            activeTray === 'settings'
-              ? 'bg-white text-black shadow-sm'
-              : 'hover:bg-white/10 text-white/80 hover:text-white'
+            activeTray === "settings"
+              ? "bg-white text-black shadow-sm"
+              : "hover:bg-white/10 text-white/80 hover:text-white"
           }`}
         >
           <Sliders className="w-4 h-4" />

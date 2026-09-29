@@ -1,9 +1,13 @@
-import * as THREE from 'three';
-import { NormalizedLandmark, Handedness } from '../../types/hand';
-import { PalmAnchor } from '../../types/palm';
-import { calculateRawPalmData } from './palmMath';
-import { mapNormalizedToScreenUV, mapScreenUVToThreeWorld, ViewportDimensions } from './coordinateMapping';
-import { AnchorSmoother } from './smoothing';
+import * as THREE from "three";
+import { NormalizedLandmark, Handedness } from "../../types/hand";
+import { PalmAnchor } from "../../types/palm";
+import { calculateRawPalmData } from "./palmMath";
+import {
+  mapNormalizedToScreenUV,
+  mapScreenUVToThreeWorld,
+  ViewportDimensions,
+} from "./coordinateMapping";
+import { AnchorSmoother } from "./smoothing";
 
 export function createDefaultPalmAnchor(): PalmAnchor {
   return {
@@ -57,11 +61,11 @@ export function computePalmAnchor(
   // When camera is mirrored (selfie mode), MediaPipe's raw handedness from unmirrored sensor image is inverted
   const effectiveHandedness: Handedness | null = handedness
     ? dimensions.isMirrored
-      ? handedness === 'Left'
-        ? 'Right'
-        : 'Left'
+      ? handedness === "Left"
+        ? "Right"
+        : "Left"
       : handedness
-    : 'Right';
+    : "Right";
 
   const rawPalm = calculateRawPalmData(landmarks, effectiveHandedness);
   if (!rawPalm) {
@@ -76,13 +80,20 @@ export function computePalmAnchor(
   const { uvX, uvY } = mapNormalizedToScreenUV(rawPalm.center.x, rawPalm.center.y, dimensions);
 
   const aspectRatio = dimensions.containerWidth / (dimensions.containerHeight || 1);
-  const worldPos = mapScreenUVToThreeWorld(uvX, uvY, cameraDistanceZ, cameraFov, aspectRatio, rawPalm.center.z);
+  const worldPos = mapScreenUVToThreeWorld(
+    uvX,
+    uvY,
+    cameraDistanceZ,
+    cameraFov,
+    aspectRatio,
+    rawPalm.center.z
+  );
 
   // When mirrored, adjust normal & rotation for mirroring
   const rawQuat = rawPalm.quaternion.clone();
   if (dimensions.isMirrored) {
     // Invert X rotation & Yaw for mirrored camera
-    const euler = new THREE.Euler().setFromQuaternion(rawQuat, 'XYZ');
+    const euler = new THREE.Euler().setFromQuaternion(rawQuat, "XYZ");
     euler.y = -euler.y;
     euler.z = -euler.z;
     rawQuat.setFromEuler(euler);

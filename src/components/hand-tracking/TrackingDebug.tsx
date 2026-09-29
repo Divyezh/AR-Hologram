@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { PalmAnchor } from '../../types/palm';
-import { HandTrackingResult } from '../../types/hand';
-import { Activity, Gauge, Navigation } from 'lucide-react';
+import React from "react";
+import { PalmAnchor } from "../../types/palm";
+import { HandTrackingResult } from "../../types/hand";
+import { Activity, Gauge, Navigation } from "lucide-react";
 
 interface TrackingDebugProps {
   palmAnchor: PalmAnchor;
@@ -39,7 +39,9 @@ export const TrackingDebug: React.FC<TrackingDebugProps> = ({
           <span className="text-[10px] text-neutral-500 flex items-center gap-1">
             <Gauge className="w-3 h-3" /> FPS
           </span>
-          <span className={`font-semibold ${fps >= 45 ? 'text-emerald-400' : 'text-amber-400'}`}>{fps} fps</span>
+          <span className={`font-semibold ${fps >= 45 ? "text-emerald-400" : "text-amber-400"}`}>
+            {fps} fps
+          </span>
         </div>
         <div className="flex flex-col">
           <span className="text-[10px] text-neutral-500">Latency</span>
@@ -50,17 +52,21 @@ export const TrackingDebug: React.FC<TrackingDebugProps> = ({
       <div className="border-t border-cyan-500/10 pt-2 space-y-1">
         <div className="flex justify-between">
           <span className="text-neutral-500">Tracking:</span>
-          <span className={palmAnchor.detected ? 'text-emerald-400 font-semibold' : 'text-neutral-500'}>
-            {palmAnchor.detected ? 'LOCKED' : 'SEARCHING'}
+          <span
+            className={palmAnchor.detected ? "text-emerald-400 font-semibold" : "text-neutral-500"}
+          >
+            {palmAnchor.detected ? "LOCKED" : "SEARCHING"}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-neutral-500">Hand:</span>
-          <span className="text-white">{handResult?.handedness || 'None'}</span>
+          <span className="text-white">{handResult?.handedness || "None"}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-neutral-500">Confidence:</span>
-          <span className="text-white">{palmAnchor.detected ? `${Math.round(palmAnchor.confidence * 100)}%` : '--'}</span>
+          <span className="text-white">
+            {palmAnchor.detected ? `${Math.round(palmAnchor.confidence * 100)}%` : "--"}
+          </span>
         </div>
       </div>
 

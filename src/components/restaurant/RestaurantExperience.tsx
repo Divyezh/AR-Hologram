@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { TableQRCodeScreen } from './TableQRCodeScreen';
-import { RestaurantMenuView } from './RestaurantMenuView';
-import { RestaurantARCameraView } from './RestaurantARCameraView';
-import { DishDossierModal } from './DishDossierModal';
-import { OrderCartDrawer, CartItem } from './OrderCartDrawer';
-import { RESTAURANT_MENU, DishItem } from '../../data/restaurantMenu';
-import { soundManager } from '../../lib/audio/soundManager';
+import React, { useState } from "react";
+import { TableQRCodeScreen } from "./TableQRCodeScreen";
+import { RestaurantMenuView } from "./RestaurantMenuView";
+import { RestaurantARCameraView } from "./RestaurantARCameraView";
+import { DishDossierModal } from "./DishDossierModal";
+import { OrderCartDrawer, CartItem } from "./OrderCartDrawer";
+import { RESTAURANT_MENU, DishItem } from "../../data/restaurantMenu";
+import { soundManager } from "../../lib/audio/soundManager";
 
 export const RestaurantExperience: React.FC = () => {
   // Step in user flow: 'qr' -> 'menu' -> 'camera'
-  const [currentStep, setCurrentStep] = useState<'qr' | 'menu' | 'camera'>('qr');
+  const [currentStep, setCurrentStep] = useState<"qr" | "menu" | "camera">("qr");
 
   // Currently inspected/active dish (defaults to classic burger ₹249)
   const [selectedDish, setSelectedDish] = useState<DishItem>(RESTAURANT_MENU[0]);
@@ -68,40 +68,40 @@ export const RestaurantExperience: React.FC = () => {
   return (
     <div
       className={`relative w-screen h-screen bg-black text-white select-none ${
-        currentStep === 'camera' ? 'overflow-hidden touch-none' : 'overflow-y-auto'
+        currentStep === "camera" ? "overflow-hidden touch-none" : "overflow-y-auto"
       }`}
     >
       {/* 1. View Switcher based on Flow Step */}
-      {currentStep === 'qr' && (
+      {currentStep === "qr" && (
         <TableQRCodeScreen
           onSelectDish={(dish) => {
             setSelectedDish(dish);
-            setCurrentStep('camera');
+            setCurrentStep("camera");
           }}
-          onEnterMenu={() => setCurrentStep('menu')}
+          onEnterMenu={() => setCurrentStep("menu")}
         />
       )}
 
-      {currentStep === 'menu' && (
+      {currentStep === "menu" && (
         <RestaurantMenuView
           onSelectDishForAR={(dish) => {
             setSelectedDish(dish);
-            setCurrentStep('camera');
+            setCurrentStep("camera");
           }}
           onOpenInfo={handleOpenInfo}
           onAddToCart={handleAddToCart}
           cartCount={cartCount}
           cartTotal={cartTotal}
           onOpenCart={() => setIsCartOpen(true)}
-          onBackToQR={() => setCurrentStep('qr')}
+          onBackToQR={() => setCurrentStep("qr")}
         />
       )}
 
-      {currentStep === 'camera' && (
+      {currentStep === "camera" && (
         <RestaurantARCameraView
           currentDish={selectedDish}
           onSelectDish={setSelectedDish}
-          onBackToMenu={() => setCurrentStep('qr')}
+          onBackToMenu={() => setCurrentStep("qr")}
           onTapInfo={handleOpenInfo}
           onAddToCart={handleAddToCart}
           cartCount={cartCount}

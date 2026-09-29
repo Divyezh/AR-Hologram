@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import { ARStudioState } from '../types/ar';
-import { CHARACTERS } from '../data/characters';
-import { EFFECTS } from '../data/effects';
-import { soundManager } from '../lib/audio/soundManager';
+import { useState, useCallback } from "react";
+import { ARStudioState } from "../types/ar";
+import { CHARACTERS } from "../data/characters";
+import { EFFECTS } from "../data/effects";
+import { soundManager } from "../lib/audio/soundManager";
 
 export function useARState() {
   const [state, setState] = useState<ARStudioState>({
@@ -13,9 +13,9 @@ export function useARState() {
     isTrackingReady: false,
     isHandDetected: false,
     activeHandSide: null,
-    selectedCharacterId: 'pure-vfx',
+    selectedCharacterId: "pure-vfx",
     selectedEffectId: EFFECTS[0].id,
-    selectedAnimationId: 'Active',
+    selectedAnimationId: "Active",
     debugMode: false,
     isMirrored: true,
     effectsIntensity: 1.0,
@@ -33,7 +33,7 @@ export function useARState() {
     setState((prev) => ({
       ...prev,
       selectedCharacterId: id,
-      selectedAnimationId: char ? char.defaultAnimation : 'Idle',
+      selectedAnimationId: char ? char.defaultAnimation : "Idle",
     }));
   }, []);
 
@@ -71,25 +71,28 @@ export function useARState() {
     setState((prev) => ({ ...prev, effectsIntensity: intensity }));
   }, []);
 
-  const updateTelemetry = useCallback((fps: number, latency: number, isHandDetected: boolean, handSide: 'Left' | 'Right' | null) => {
-    setState((prev) => {
-      if (
-        prev.fps === fps &&
-        prev.detectionLatency === latency &&
-        prev.isHandDetected === isHandDetected &&
-        prev.activeHandSide === handSide
-      ) {
-        return prev;
-      }
-      return {
-        ...prev,
-        fps,
-        detectionLatency: latency,
-        isHandDetected,
-        activeHandSide: handSide,
-      };
-    });
-  }, []);
+  const updateTelemetry = useCallback(
+    (fps: number, latency: number, isHandDetected: boolean, handSide: "Left" | "Right" | null) => {
+      setState((prev) => {
+        if (
+          prev.fps === fps &&
+          prev.detectionLatency === latency &&
+          prev.isHandDetected === isHandDetected &&
+          prev.activeHandSide === handSide
+        ) {
+          return prev;
+        }
+        return {
+          ...prev,
+          fps,
+          detectionLatency: latency,
+          isHandDetected,
+          activeHandSide: handSide,
+        };
+      });
+    },
+    []
+  );
 
   const setTrackingReady = useCallback((ready: boolean) => {
     setState((prev) => ({ ...prev, isTrackingReady: ready }));

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { MagicRing } from './MagicRing';
-import { EffectConfig } from '../../types/effects';
+import React from "react";
+import { MagicRing } from "./MagicRing";
+import { EffectConfig } from "../../types/effects";
 
 interface EnergyRingProps {
   effect: EffectConfig;

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useRef } from 'react';
-import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
+import React, { useRef } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
 
 interface HologramEffectProps {
   color?: string;
@@ -11,7 +11,7 @@ interface HologramEffectProps {
 }
 
 export const HologramEffect: React.FC<HologramEffectProps> = ({
-  color = '#06b6d4',
+  color = "#06b6d4",
   radius = 0.85,
   height = 0.9,
 }) => {

@@ -1,33 +1,37 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Camera, Scan, Navigation, Sparkles } from 'lucide-react';
+import React from "react";
+import { Camera, Scan, Navigation, Sparkles } from "lucide-react";
 
 export const HowItWorks: React.FC = () => {
   const steps = [
     {
-      num: '01',
+      num: "01",
       icon: <Camera className="w-6 h-6 text-emerald-400" />,
-      title: 'Initialize Camera Feed',
-      description: 'Your browser activates the front webcam with hardware aspect-ratio and zero server transmission.',
+      title: "Initialize Camera Feed",
+      description:
+        "Your browser activates the front webcam with hardware aspect-ratio and zero server transmission.",
     },
     {
-      num: '02',
+      num: "02",
       icon: <Scan className="w-6 h-6 text-cyan-400" />,
-      title: 'MediaPipe Joint Tracking',
-      description: 'The neural landmarker detects 21 anatomical landmarks on your hand at up to 60 frames per second.',
+      title: "MediaPipe Joint Tracking",
+      description:
+        "The neural landmarker detects 21 anatomical landmarks on your hand at up to 60 frames per second.",
     },
     {
-      num: '03',
+      num: "03",
       icon: <Navigation className="w-6 h-6 text-amber-400" />,
-      title: 'Calculate 6-DOF Palm Anchor',
-      description: 'The mathematical engine derives palm normal vectors, pitch, roll, yaw, scale, and screen coordinate mapping.',
+      title: "Calculate 6-DOF Palm Anchor",
+      description:
+        "The mathematical engine derives palm normal vectors, pitch, roll, yaw, scale, and screen coordinate mapping.",
     },
     {
-      num: '04',
+      num: "04",
       icon: <Sparkles className="w-6 h-6 text-purple-400" />,
-      title: 'Render WebGL Hologram',
-      description: 'Three.js renders the rotating magic ring and animated character directly attached to your palm in 3D.',
+      title: "Render WebGL Hologram",
+      description:
+        "Three.js renders the rotating magic ring and animated character directly attached to your palm in 3D.",
     },
   ];
 

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useEffect, useMemo } from 'react';
-import { useGLTF, useAnimations } from '@react-three/drei';
-import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { CharacterConfig } from '../../types/character';
+import React, { useEffect, useMemo } from "react";
+import { useGLTF, useAnimations } from "@react-three/drei";
+import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
+import { CharacterConfig } from "../../types/character";
 
 interface RobotCharacterProps {
   config: CharacterConfig;
@@ -23,7 +23,7 @@ export const RobotCharacter: React.FC<RobotCharacterProps> = ({ config, animatio
     const targetAnim =
       actions[animationName] ||
       actions[config.defaultAnimation] ||
-      actions['Idle'] ||
+      actions["Idle"] ||
       Object.values(actions)[0];
 
     if (targetAnim) {
@@ -46,4 +46,4 @@ export const RobotCharacter: React.FC<RobotCharacterProps> = ({ config, animatio
 };
 
 // Preload model
-useGLTF.preload('/models/robot/robot.glb');
+useGLTF.preload("/models/robot/robot.glb");

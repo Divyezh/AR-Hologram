@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { ARScene } from './ARScene';
-import { HandLandmarks } from '../hand-tracking/HandLandmarks';
-import { TrackingDebug } from '../hand-tracking/TrackingDebug';
-import { GestureManager } from '../gestures/GestureManager';
-import { AnimationController } from '../animations/AnimationController';
-import { PalmAnchor } from '../../types/palm';
-import { MultiHandTrackingResult, NormalizedLandmark } from '../../types/hand';
-import { GestureDetectionResult } from '../../types/gestures';
-import { EffectConfig } from '../../types/effects';
-import { ViewportDimensions } from '../../lib/ar/coordinateMapping';
-import { FPSTracker } from '../../lib/utils/performance';
+import React, { useRef, useEffect, useState, useCallback } from "react";
+import { ARScene } from "./ARScene";
+import { HandLandmarks } from "../hand-tracking/HandLandmarks";
+import { TrackingDebug } from "../hand-tracking/TrackingDebug";
+import { GestureManager } from "../gestures/GestureManager";
+import { AnimationController } from "../animations/AnimationController";
+import { PalmAnchor } from "../../types/palm";
+import { MultiHandTrackingResult, NormalizedLandmark } from "../../types/hand";
+import { GestureDetectionResult } from "../../types/gestures";
+import { EffectConfig } from "../../types/effects";
+import { ViewportDimensions } from "../../lib/ar/coordinateMapping";
+import { FPSTracker } from "../../lib/utils/performance";
 
 interface AROverlayProps {
   videoRef: React.RefObject<HTMLVideoElement | null>;
@@ -23,13 +23,24 @@ interface AROverlayProps {
   selectedAnimationId: string;
   particlesEnabled: boolean;
   anchorRef: React.MutableRefObject<PalmAnchor>;
-  processFrame: (video: HTMLVideoElement | null, timestamp: number) => MultiHandTrackingResult | null;
-  updateAnchor: (tracking: MultiHandTrackingResult | null, dimensions: ViewportDimensions) => PalmAnchor;
+  processFrame: (
+    video: HTMLVideoElement | null,
+    timestamp: number
+  ) => MultiHandTrackingResult | null;
+  updateAnchor: (
+    tracking: MultiHandTrackingResult | null,
+    dimensions: ViewportDimensions
+  ) => PalmAnchor;
   latestTrackingRef: React.MutableRefObject<MultiHandTrackingResult | null>;
   latestGestureRef: React.MutableRefObject<GestureDetectionResult | null>;
   latencyRef: React.MutableRefObject<number>;
   onTriggerAnimation: (anim: string) => void;
-  onTelemetryUpdate: (fps: number, latency: number, isHandDetected: boolean, handSide: 'Left' | 'Right' | null) => void;
+  onTelemetryUpdate: (
+    fps: number,
+    latency: number,
+    isHandDetected: boolean,
+    handSide: "Left" | "Right" | null
+  ) => void;
 }
 
 export const AROverlay: React.FC<AROverlayProps> = ({
@@ -203,10 +214,7 @@ export const AROverlay: React.FC<AROverlayProps> = ({
       </div>
 
       {/* Controller to trigger animations on gestures */}
-      <AnimationController
-        gestureData={debugGesture}
-        onTriggerAnimation={onTriggerAnimation}
-      />
+      <AnimationController gestureData={debugGesture} onTriggerAnimation={onTriggerAnimation} />
     </div>
   );
 };

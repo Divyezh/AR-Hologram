@@ -1,9 +1,9 @@
-export type CharacterType = 'glb' | 'procedural';
+export type CharacterType = "glb" | "procedural";
 
 export interface CharacterConfig {
   id: string;
   name: string;
-  category: 'robot' | 'creature' | 'elemental';
+  category: "robot" | "creature" | "elemental";
   description: string;
   modelPath: string;
   scale: number;

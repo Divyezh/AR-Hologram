@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Loader2 } from 'lucide-react';
+import React from "react";
+import { Loader2 } from "lucide-react";
 
 interface ARLoadingProps {
   message?: string;
 }
 
 export const ARLoading: React.FC<ARLoadingProps> = ({
-  message = 'Initializing Neural AR Pipeline...',
+  message = "Initializing Neural AR Pipeline...",
 }) => {
   return (
     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md">
@@ -17,7 +17,9 @@ export const ARLoading: React.FC<ARLoadingProps> = ({
         <Loader2 className="absolute inset-0 m-auto w-6 h-6 text-cyan-400 animate-pulse" />
       </div>
       <p className="text-sm font-medium text-cyan-200 tracking-wide">{message}</p>
-      <span className="text-[11px] text-neutral-500 mt-1">Accelerated WebGL + MediaPipe Hand Landmarker</span>
+      <span className="text-[11px] text-neutral-500 mt-1">
+        Accelerated WebGL + MediaPipe Hand Landmarker
+      </span>
     </div>
   );
 };

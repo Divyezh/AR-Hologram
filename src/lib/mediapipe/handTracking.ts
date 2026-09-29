@@ -1,5 +1,5 @@
-import { HandLandmarker } from '@mediapipe/tasks-vision';
-import { HandTrackingResult, MultiHandTrackingResult, Handedness } from '../../types/hand';
+import { HandLandmarker } from "@mediapipe/tasks-vision";
+import { HandTrackingResult, MultiHandTrackingResult, Handedness } from "../../types/hand";
 
 export function processVideoFrame(
   landmarker: HandLandmarker,

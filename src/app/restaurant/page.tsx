@@ -1,11 +1,14 @@
-'use client';
+"use client";
 
-import dynamic from 'next/dynamic';
-import { LoadingScreen } from '../../components/ui/LoadingScreen';
+import dynamic from "next/dynamic";
+import { LoadingScreen } from "../../components/ui/LoadingScreen";
 
 // Dynamic import with ssr: false ensures WebGL, Three.js & Camera only run in browser
 const RestaurantExperience = dynamic(
-  () => import('../../components/restaurant/RestaurantExperience').then((mod) => mod.RestaurantExperience),
+  () =>
+    import("../../components/restaurant/RestaurantExperience").then(
+      (mod) => mod.RestaurantExperience
+    ),
   {
     ssr: false,
     loading: () => (

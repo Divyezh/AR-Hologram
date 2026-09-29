@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useRef, useMemo } from 'react';
-import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
+import React, { useRef, useMemo } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
 
 interface ParticleFieldProps {
   count?: number;
@@ -13,7 +13,7 @@ interface ParticleFieldProps {
 
 export const ParticleField: React.FC<ParticleFieldProps> = ({
   count = 140,
-  color = '#f59e0b',
+  color = "#f59e0b",
   radius = 1.0,
   intensity = 1.0,
 }) => {
@@ -44,7 +44,7 @@ export const ParticleField: React.FC<ParticleFieldProps> = ({
   useFrame((state, delta) => {
     if (!pointsRef.current) return;
     const geom = pointsRef.current.geometry;
-    const posAttr = geom.getAttribute('position') as THREE.BufferAttribute;
+    const posAttr = geom.getAttribute("position") as THREE.BufferAttribute;
     const array = posAttr.array as Float32Array;
 
     const time = state.clock.getElapsedTime();
@@ -72,10 +72,7 @@ export const ParticleField: React.FC<ParticleFieldProps> = ({
   return (
     <points ref={pointsRef}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[positions, 3]}
-        />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
         size={0.035 * intensity}

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { Sparkles, Shield, Cpu } from 'lucide-react';
-import { APP_CONFIG } from '../../config/app.config';
+import React from "react";
+import Link from "next/link";
+import { Sparkles, Shield, Cpu } from "lucide-react";
+import { APP_CONFIG } from "../../config/app.config";
 
 export const Footer: React.FC = () => {
   return (

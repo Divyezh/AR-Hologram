@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Sparkles,
   ShoppingBag,
@@ -13,14 +13,14 @@ import {
   QrCode,
   ArrowLeft,
   ChevronRight,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   RESTAURANT_MENU,
   MENU_CATEGORIES,
   RESTAURANT_INFO,
   DishItem,
-} from '../../data/restaurantMenu';
-import { soundManager } from '../../lib/audio/soundManager';
+} from "../../data/restaurantMenu";
+import { soundManager } from "../../lib/audio/soundManager";
 
 interface RestaurantMenuViewProps {
   onSelectDishForAR: (dish: DishItem) => void;
@@ -41,14 +41,14 @@ export const RestaurantMenuView: React.FC<RestaurantMenuViewProps> = ({
   onOpenCart,
   onBackToQR,
 }) => {
-  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [activeCategory, setActiveCategory] = useState<string>("all");
 
   const filteredDishes =
-    activeCategory === 'all'
+    activeCategory === "all"
       ? RESTAURANT_MENU
       : RESTAURANT_MENU.filter((d) => d.category === activeCategory);
 
-  const classicBurger = RESTAURANT_MENU.find((d) => d.id === 'classic-burger')!;
+  const classicBurger = RESTAURANT_MENU.find((d) => d.id === "classic-burger")!;
 
   return (
     <div className="relative w-full min-h-screen bg-[#0c0a09] text-white p-4 sm:p-8 flex flex-col justify-between">
@@ -99,7 +99,7 @@ export const RestaurantMenuView: React.FC<RestaurantMenuViewProps> = ({
             <span>
               {cartCount > 0
                 ? `${cartCount} items • ${RESTAURANT_INFO.currencySymbol}${cartTotal}`
-                : 'Order Tray'}
+                : "Order Tray"}
             </span>
           </button>
         </div>
@@ -114,7 +114,7 @@ export const RestaurantMenuView: React.FC<RestaurantMenuViewProps> = ({
           <div className="space-y-3 max-w-xl text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Diner's Choice • Signature Dish</span>
+              <span>Dinner&apos;s Choice • Signature Dish</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               {classicBurger.name}
@@ -186,8 +186,8 @@ export const RestaurantMenuView: React.FC<RestaurantMenuViewProps> = ({
               }}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 activeCategory === cat.id
-                  ? 'bg-white text-black shadow-md'
-                  : 'bg-white/6 hover:bg-white/12 text-white/70 hover:text-white border border-white/8'
+                  ? "bg-white text-black shadow-md"
+                  : "bg-white/6 hover:bg-white/12 text-white/70 hover:text-white border border-white/8"
               }`}
             >
               <span>{cat.icon}</span>
@@ -262,7 +262,10 @@ export const RestaurantMenuView: React.FC<RestaurantMenuViewProps> = ({
                   className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Add {dish.currency}{dish.price}</span>
+                  <span>
+                    Add {dish.currency}
+                    {dish.price}
+                  </span>
                 </button>
               </div>
             </div>
@@ -273,7 +276,8 @@ export const RestaurantMenuView: React.FC<RestaurantMenuViewProps> = ({
       {/* Footer Info */}
       <footer className="relative z-10 w-full max-w-6xl mx-auto pt-6 text-center text-xs text-white/40 border-t border-white/8">
         <span>
-          Tap "3D AR 📱" on any dish to activate the Live Camera with Rotate, Pinch-Scale, and Move controls.
+          Tap &ldquo;3D AR 📱&rdquo; on any dish to activate the Live Camera with Rotate,
+          Pinch-Scale, and Move controls.
         </span>
       </footer>
     </div>

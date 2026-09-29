@@ -1,15 +1,25 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { CameraStatus } from '../../types/camera';
-import { ChevronLeft, Camera, CameraOff, Volume2, VolumeX, FlipHorizontal, Eye, EyeOff, SwitchCamera } from 'lucide-react';
+import React from "react";
+import Link from "next/link";
+import { CameraStatus } from "../../types/camera";
+import {
+  ChevronLeft,
+  Camera,
+  CameraOff,
+  Volume2,
+  VolumeX,
+  FlipHorizontal,
+  Eye,
+  EyeOff,
+  SwitchCamera,
+} from "lucide-react";
 
 interface StudioToolbarProps {
   cameraStatus: CameraStatus;
   isModelReady: boolean;
   isHandDetected: boolean;
-  activeHandSide?: 'Left' | 'Right' | null;
+  activeHandSide?: "Left" | "Right" | null;
   isMirrored: boolean;
   debugMode: boolean;
   isAudioMuted: boolean;
@@ -38,7 +48,7 @@ export const StudioToolbar: React.FC<StudioToolbarProps> = ({
   onToggleDebug,
   onToggleAudio,
 }) => {
-  const isStreaming = cameraStatus === 'active';
+  const isStreaming = cameraStatus === "active";
 
   return (
     <header className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between gap-3 pointer-events-none">
@@ -66,34 +76,32 @@ export const StudioToolbar: React.FC<StudioToolbarProps> = ({
           <span
             className={`w-1.5 h-1.5 rounded-full ${
               isHandDetected
-                ? 'bg-emerald-400 animate-pulse'
+                ? "bg-emerald-400 animate-pulse"
                 : isStreaming
-                ? 'bg-amber-400'
-                : 'bg-neutral-500'
+                  ? "bg-amber-400"
+                  : "bg-neutral-500"
             }`}
           />
           <span>
             {isHandDetected
-              ? `Hand Locked ${activeHandSide ? `(${activeHandSide})` : ''}`
+              ? `Hand Locked ${activeHandSide ? `(${activeHandSide})` : ""}`
               : isStreaming
-              ? 'Show palm to camera'
-              : 'Standby'}
+                ? "Show palm to camera"
+                : "Standby"}
           </span>
         </div>
       </div>
-
-
 
       {/* Right: Sound, Camera Toggles, and Menu (Inspired by Reference 1 & 2) */}
       <div className="flex items-center gap-2 pointer-events-auto">
         {/* Sound toggle pill */}
         <button
           onClick={onToggleAudio}
-          title={isAudioMuted ? 'Unmute Audio' : 'Mute Audio'}
+          title={isAudioMuted ? "Unmute Audio" : "Mute Audio"}
           className={`p-2.5 rounded-full backdrop-blur-2xl border transition-all cursor-pointer ${
             !isAudioMuted
-              ? 'bg-white/12 text-amber-300 border-white/20 shadow-sm'
-              : 'bg-white/6 text-white/50 border-white/10 hover:text-white'
+              ? "bg-white/12 text-amber-300 border-white/20 shadow-sm"
+              : "bg-white/6 text-white/50 border-white/10 hover:text-white"
           }`}
         >
           {!isAudioMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -114,11 +122,11 @@ export const StudioToolbar: React.FC<StudioToolbarProps> = ({
         {isStreaming && (
           <button
             onClick={onToggleMirror}
-            title={isMirrored ? 'Unmirror Camera' : 'Mirror Camera'}
+            title={isMirrored ? "Unmirror Camera" : "Mirror Camera"}
             className={`p-2.5 rounded-full backdrop-blur-2xl border transition-all cursor-pointer ${
               isMirrored
-                ? 'bg-white/12 text-white border-white/20'
-                : 'bg-white/6 text-white/50 border-white/10 hover:text-white'
+                ? "bg-white/12 text-white border-white/20"
+                : "bg-white/6 text-white/50 border-white/10 hover:text-white"
             }`}
           >
             <FlipHorizontal className="w-4 h-4" />
@@ -129,11 +137,11 @@ export const StudioToolbar: React.FC<StudioToolbarProps> = ({
         {isStreaming && (
           <button
             onClick={onToggleDebug}
-            title={debugMode ? 'Hide Neural Joints' : 'Show Neural Joints'}
+            title={debugMode ? "Hide Neural Joints" : "Show Neural Joints"}
             className={`p-2.5 rounded-full backdrop-blur-2xl border transition-all cursor-pointer ${
               debugMode
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                : 'bg-white/6 text-white/50 border-white/10 hover:text-white'
+                ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                : "bg-white/6 text-white/50 border-white/10 hover:text-white"
             }`}
           >
             {debugMode ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}

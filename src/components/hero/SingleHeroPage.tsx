@@ -1,12 +1,25 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { Sparkles, Shield, Flame, Play, Volume2, VolumeX, Camera, ChevronRight, Eye, Wind } from 'lucide-react';
-import { soundManager } from '../../lib/audio/soundManager';
+import React, { useState } from "react";
+import Link from "next/link";
+import {
+  Sparkles,
+  Shield,
+  Flame,
+  Play,
+  Volume2,
+  VolumeX,
+  Camera,
+  ChevronRight,
+  Eye,
+  Wind,
+} from "lucide-react";
+import { soundManager } from "../../lib/audio/soundManager";
 
 export const SingleHeroPage: React.FC = () => {
-  const [activePreset, setActivePreset] = useState<'strange' | 'naruto' | 'fire' | 'robot'>('strange');
+  const [activePreset, setActivePreset] = useState<"strange" | "naruto" | "fire" | "robot">(
+    "strange"
+  );
   const [isAudioMuted, setIsAudioMuted] = useState(false);
 
   const toggleSound = () => {
@@ -17,40 +30,42 @@ export const SingleHeroPage: React.FC = () => {
 
   const presets = {
     strange: {
-      tag: 'Tao Mandala',
-      title: 'Doctor Strange',
-      subtitle: 'Sorcerer Supreme Shield',
-      desc: 'Summon the Sorcerer Supreme mystic Tao Mandala shield upon your palm with authentic video runes, pitch-black background removal, and blazing eldritch pyrotechnics.',
-      gradient: 'from-amber-600/35 via-orange-600/25 to-transparent',
-      accent: '#f59e0b',
+      tag: "Tao Mandala",
+      title: "Doctor Strange",
+      subtitle: "Sorcerer Supreme Shield",
+      desc: "Summon the Sorcerer Supreme mystic Tao Mandala shield upon your palm with authentic video runes, pitch-black background removal, and blazing eldritch pyrotechnics.",
+      gradient: "from-amber-600/35 via-orange-600/25 to-transparent",
+      accent: "#f59e0b",
       icon: <Shield className="w-4 h-4 text-amber-300" />,
     },
     naruto: {
-      tag: 'Chakra Jutsu',
-      title: 'Naruto Rasengan',
-      subtitle: 'Spiraling Chakra Sphere',
-      desc: 'Channel the power of the legendary jutsu with real-time green-screen-removed video, spinning 3D chakra rings, and authentic anime audio.',
-      gradient: 'from-cyan-500/35 via-blue-600/25 to-transparent',
-      accent: '#00d2ff',
-      icon: <Wind className="w-4 h-4 text-cyan-300 animate-spin" style={{ animationDuration: '4s' }} />,
+      tag: "Chakra Jutsu",
+      title: "Naruto Rasengan",
+      subtitle: "Spiraling Chakra Sphere",
+      desc: "Channel the power of the legendary jutsu with real-time green-screen-removed video, spinning 3D chakra rings, and authentic anime audio.",
+      gradient: "from-cyan-500/35 via-blue-600/25 to-transparent",
+      accent: "#00d2ff",
+      icon: (
+        <Wind className="w-4 h-4 text-cyan-300 animate-spin" style={{ animationDuration: "4s" }} />
+      ),
     },
 
     fire: {
-      tag: 'Pyromancy Core',
-      title: 'Burning Fireball',
-      subtitle: 'Infernal Flame',
-      desc: 'Ignite a turbulent volumetric flame orb on your hand with dancing fire tongues, rising ember sparks, and dynamic light.',
-      gradient: 'from-orange-600/35 via-red-600/20 to-transparent',
-      accent: '#ea580c',
+      tag: "Pyromancy Core",
+      title: "Burning Fireball",
+      subtitle: "Infernal Flame",
+      desc: "Ignite a turbulent volumetric flame orb on your hand with dancing fire tongues, rising ember sparks, and dynamic light.",
+      gradient: "from-orange-600/35 via-red-600/20 to-transparent",
+      accent: "#ea580c",
       icon: <Flame className="w-4 h-4 text-orange-400" />,
     },
     robot: {
-      tag: 'Cyber Droid',
-      title: 'Holo Companion',
-      subtitle: 'Kinetic 3D Avatar',
-      desc: 'Animate fully-rigged 3D cyber characters standing upon glowing holographic rings that follow your palm in real-time.',
-      gradient: 'from-cyan-600/30 via-blue-600/20 to-transparent',
-      accent: '#06b6d4',
+      tag: "Cyber Droid",
+      title: "Holo Companion",
+      subtitle: "Kinetic 3D Avatar",
+      desc: "Animate fully-rigged 3D cyber characters standing upon glowing holographic rings that follow your palm in real-time.",
+      gradient: "from-cyan-600/30 via-blue-600/20 to-transparent",
+      accent: "#06b6d4",
       icon: <Sparkles className="w-4 h-4 text-cyan-300" />,
     },
   };
@@ -104,10 +119,14 @@ export const SingleHeroPage: React.FC = () => {
 
           <button
             onClick={toggleSound}
-            title={isAudioMuted ? 'Unmute Audio' : 'Mute Audio'}
+            title={isAudioMuted ? "Unmute Audio" : "Mute Audio"}
             className="p-2.5 rounded-full bg-white/7 hover:bg-white/14 text-white/80 hover:text-white backdrop-blur-2xl border border-white/12 transition-colors cursor-pointer"
           >
-            {isAudioMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-amber-300" />}
+            {isAudioMuted ? (
+              <VolumeX className="w-4 h-4" />
+            ) : (
+              <Volume2 className="w-4 h-4 text-amber-300" />
+            )}
           </button>
         </div>
       </header>
@@ -171,14 +190,14 @@ export const SingleHeroPage: React.FC = () => {
           <div className="flex items-center gap-1.5 p-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/8 overflow-x-auto max-w-full">
             <button
               onClick={() => {
-                setActivePreset('strange');
+                setActivePreset("strange");
                 soundManager.playClick();
-                soundManager.startEffectSound('mandala');
+                soundManager.startEffectSound("mandala");
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shrink-0 cursor-pointer ${
-                activePreset === 'strange'
-                  ? 'bg-amber-500/25 text-white border border-amber-400/50 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
-                  : 'text-white/60 hover:text-white hover:bg-white/6'
+                activePreset === "strange"
+                  ? "bg-amber-500/25 text-white border border-amber-400/50 shadow-[0_0_12px_rgba(245,158,11,0.5)]"
+                  : "text-white/60 hover:text-white hover:bg-white/6"
               }`}
             >
               <Shield className="w-3.5 h-3.5 text-amber-300" />
@@ -187,31 +206,29 @@ export const SingleHeroPage: React.FC = () => {
 
             <button
               onClick={() => {
-                setActivePreset('naruto');
+                setActivePreset("naruto");
                 soundManager.playClick();
-                soundManager.startEffectSound('naruto');
+                soundManager.startEffectSound("naruto");
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shrink-0 cursor-pointer ${
-                activePreset === 'naruto'
-                  ? 'bg-cyan-500/25 text-white border border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.4)]'
-                  : 'text-white/60 hover:text-white hover:bg-white/6'
+                activePreset === "naruto"
+                  ? "bg-cyan-500/25 text-white border border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+                  : "text-white/60 hover:text-white hover:bg-white/6"
               }`}
             >
               <Wind className="w-3.5 h-3.5 text-cyan-300" />
               <span>Naruto Rasengan</span>
             </button>
 
-
-
             <button
               onClick={() => {
-                setActivePreset('fire');
+                setActivePreset("fire");
                 soundManager.playClick();
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer ${
-                activePreset === 'fire'
-                  ? 'bg-white/20 text-white shadow-sm'
-                  : 'text-white/60 hover:text-white hover:bg-white/6'
+                activePreset === "fire"
+                  ? "bg-white/20 text-white shadow-sm"
+                  : "text-white/60 hover:text-white hover:bg-white/6"
               }`}
             >
               <Flame className="w-3.5 h-3.5 text-orange-400" />
@@ -220,13 +237,13 @@ export const SingleHeroPage: React.FC = () => {
 
             <button
               onClick={() => {
-                setActivePreset('robot');
+                setActivePreset("robot");
                 soundManager.playClick();
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer ${
-                activePreset === 'robot'
-                  ? 'bg-white/20 text-white shadow-sm'
-                  : 'text-white/60 hover:text-white hover:bg-white/6'
+                activePreset === "robot"
+                  ? "bg-white/20 text-white shadow-sm"
+                  : "text-white/60 hover:text-white hover:bg-white/6"
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-cyan-300" />

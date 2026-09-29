@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { GestureDetectionResult } from '../../types/gestures';
-import { GESTURE_CONFIGS } from '../../constants/gestures';
+import React from "react";
+import { GestureDetectionResult } from "../../types/gestures";
+import { GESTURE_CONFIGS } from "../../constants/gestures";
 
 interface GestureManagerProps {
   gestureData: GestureDetectionResult | null;
@@ -13,7 +13,7 @@ export const GestureManager: React.FC<GestureManagerProps> = ({
   gestureData,
   isVisible = true,
 }) => {
-  if (!isVisible || !gestureData || gestureData.gesture === 'NONE') {
+  if (!isVisible || !gestureData || gestureData.gesture === "NONE") {
     return null;
   }
 

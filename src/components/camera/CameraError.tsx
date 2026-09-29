@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { AlertCircle, RefreshCw } from 'lucide-react';
-import { CameraErrorType } from '../../types/camera';
+import React from "react";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { CameraErrorType } from "../../types/camera";
 
 interface CameraErrorProps {
   error: string;
@@ -10,11 +10,7 @@ interface CameraErrorProps {
   onRetry: () => void;
 }
 
-export const CameraError: React.FC<CameraErrorProps> = ({
-  error,
-  errorType,
-  onRetry,
-}) => {
+export const CameraError: React.FC<CameraErrorProps> = ({ error, errorType, onRetry }) => {
   return (
     <div className="absolute inset-0 z-30 flex items-center justify-center p-6 bg-black/80 backdrop-blur-2xl">
       <div className="relative max-w-sm w-full p-8 rounded-[40px] bg-white/8 backdrop-blur-3xl border border-red-500/30 text-center flex flex-col items-center shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
@@ -25,7 +21,7 @@ export const CameraError: React.FC<CameraErrorProps> = ({
         <h3 className="text-xl font-semibold text-white mb-2">Camera Unavailable</h3>
         <p className="text-xs text-white/60 font-light mb-4 leading-relaxed">{error}</p>
 
-        {errorType === 'NotAllowedError' && (
+        {errorType === "NotAllowedError" && (
           <div className="p-3 mb-6 rounded-2xl bg-white/4 text-[11px] text-white/60 text-left border border-white/8 space-y-1">
             <p className="font-semibold text-white/80">To enable camera:</p>
             <p>1. Tap the site settings / lock icon in the address bar.</p>

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useMemo } from 'react';
-import * as THREE from 'three';
+import React, { useMemo } from "react";
+import * as THREE from "three";
 
 interface Fries3DModelProps {
   onTap?: () => void;
@@ -10,14 +10,15 @@ interface Fries3DModelProps {
 export const Fries3DModel: React.FC<Fries3DModelProps> = ({ onTap }) => {
   // Generate bundle of golden fries
   const fries = useMemo(() => {
-    const list: { pos: [number, number, number]; rot: [number, number, number]; length: number }[] = [];
+    const list: { pos: [number, number, number]; rot: [number, number, number]; length: number }[] =
+      [];
     for (let i = 0; i < 32; i++) {
       const angle = (i / 32) * Math.PI * 2;
       const r = 0.15 + (i % 3) * 0.18;
       const x = Math.cos(angle) * r;
       const z = Math.sin(angle) * r;
-      const rotX = (Math.random() - 0.5) * 0.35 + (z * 0.4);
-      const rotZ = (Math.random() - 0.5) * 0.35 - (x * 0.4);
+      const rotX = (Math.random() - 0.5) * 0.35 + z * 0.4;
+      const rotZ = (Math.random() - 0.5) * 0.35 - x * 0.4;
       const length = 1.1 + Math.random() * 0.5;
 
       list.push({
@@ -53,15 +54,10 @@ export const Fries3DModel: React.FC<Fries3DModelProps> = ({ onTap }) => {
       {/* Golden Crispy Fries */}
       <group position={[0, -0.15, 0]}>
         {fries.map((f, idx) => (
-          <mesh
-            key={`fry-${idx}`}
-            position={f.pos}
-            rotation={f.rot}
-            castShadow
-          >
+          <mesh key={`fry-${idx}`} position={f.pos} rotation={f.rot} castShadow>
             <boxGeometry args={[0.13, f.length, 0.13]} />
             <meshStandardMaterial
-              color={idx % 4 === 0 ? '#eab308' : idx % 3 === 0 ? '#facc15' : '#ca8a04'}
+              color={idx % 4 === 0 ? "#eab308" : idx % 3 === 0 ? "#facc15" : "#ca8a04"}
               roughness={0.45}
             />
           </mesh>

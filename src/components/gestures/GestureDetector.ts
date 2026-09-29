@@ -1,6 +1,6 @@
-import { NormalizedLandmark } from '../../types/hand';
-import { GestureType, GestureDetectionResult } from '../../types/gestures';
-import { HAND_LANDMARK } from '../../constants/landmarks';
+import { NormalizedLandmark } from "../../types/hand";
+import { GestureType, GestureDetectionResult } from "../../types/gestures";
+import { HAND_LANDMARK } from "../../constants/landmarks";
 
 function dist(p1: NormalizedLandmark, p2: NormalizedLandmark): number {
   const dx = p1.x - p2.x;
@@ -15,7 +15,7 @@ function dist(p1: NormalizedLandmark, p2: NormalizedLandmark): number {
 export function detectHandGesture(landmarks: NormalizedLandmark[]): GestureDetectionResult {
   if (!landmarks || landmarks.length < 21) {
     return {
-      gesture: 'NONE',
+      gesture: "NONE",
       confidence: 0,
       extendedFingers: { thumb: false, index: false, middle: false, ring: false, pinky: false },
     };
@@ -39,34 +39,47 @@ export function detectHandGesture(landmarks: NormalizedLandmark[]): GestureDetec
   const isMiddleExtended = dist(wrist, middleTip) > dist(wrist, middlePip) * 1.15;
   const isRingExtended = dist(wrist, ringTip) > dist(wrist, ringPip) * 1.15;
   const isPinkyExtended = dist(wrist, pinkyTip) > dist(wrist, pinkyPip) * 1.15;
-  const isThumbExtended = dist(wrist, thumbTip) > dist(wrist, thumbIp) * 1.1 && dist(thumbTip, indexMcp) > 0.08;
+  const isThumbExtended =
+    dist(wrist, thumbTip) > dist(wrist, thumbIp) * 1.1 && dist(thumbTip, indexMcp) > 0.08;
 
   const pinchDist = dist(thumbTip, indexTip);
   const isPinch = pinchDist < 0.055;
 
-  let gesture: GestureType = 'NONE';
+  let gesture: GestureType = "NONE";
   let confidence = 0.85;
 
   if (isPinch) {
-    gesture = 'PINCH';
+    gesture = "PINCH";
     confidence = 0.95;
   } else if (isIndexExtended && isMiddleExtended && isRingExtended && isPinkyExtended) {
-    gesture = 'OPEN_PALM';
+    gesture = "OPEN_PALM";
     confidence = 0.98;
-  } else if (!isIndexExtended && !isMiddleExtended && !isRingExtended && !isPinkyExtended && !isThumbExtended) {
-    gesture = 'FIST';
+  } else if (
+    !isIndexExtended &&
+    !isMiddleExtended &&
+    !isRingExtended &&
+    !isPinkyExtended &&
+    !isThumbExtended
+  ) {
+    gesture = "FIST";
     confidence = 0.92;
   } else if (isIndexExtended && !isMiddleExtended && !isRingExtended && !isPinkyExtended) {
-    gesture = 'POINT';
+    gesture = "POINT";
     confidence = 0.95;
   } else if (isIndexExtended && isMiddleExtended && !isRingExtended && !isPinkyExtended) {
-    gesture = 'PEACE';
+    gesture = "PEACE";
     confidence = 0.94;
-  } else if (isThumbExtended && !isIndexExtended && !isMiddleExtended && !isRingExtended && !isPinkyExtended) {
-    gesture = 'THUMBS_UP';
+  } else if (
+    isThumbExtended &&
+    !isIndexExtended &&
+    !isMiddleExtended &&
+    !isRingExtended &&
+    !isPinkyExtended
+  ) {
+    gesture = "THUMBS_UP";
     confidence = 0.9;
   } else if (isIndexExtended && !isMiddleExtended && !isRingExtended && isPinkyExtended) {
-    gesture = 'ROCK';
+    gesture = "ROCK";
     confidence = 0.92;
   }
 

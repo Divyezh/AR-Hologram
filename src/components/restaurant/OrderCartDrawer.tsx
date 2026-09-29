@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { X, Plus, Minus, Trash2, CheckCircle2, UtensilsCrossed, BellRing } from 'lucide-react';
-import { DishItem, RESTAURANT_INFO } from '../../data/restaurantMenu';
-import { soundManager } from '../../lib/audio/soundManager';
+import React, { useState } from "react";
+import { X, Plus, Minus, Trash2, CheckCircle2, UtensilsCrossed, BellRing } from "lucide-react";
+import { DishItem, RESTAURANT_INFO } from "../../data/restaurantMenu";
+import { soundManager } from "../../lib/audio/soundManager";
 
 export interface CartItem {
   dish: DishItem;
@@ -73,7 +73,9 @@ export const OrderCartDrawer: React.FC<OrderCartDrawerProps> = ({
                   🍽️
                 </div>
                 <p className="text-xs">Your order tray is currently empty.</p>
-                <p className="text-[11px] text-white/30">Select dishes from the 3D menu or camera view.</p>
+                <p className="text-[11px] text-white/30">
+                  Select dishes from the 3D menu or camera view.
+                </p>
               </div>
             ) : (
               items.map((item) => (
@@ -98,7 +100,11 @@ export const OrderCartDrawer: React.FC<OrderCartDrawerProps> = ({
                       onClick={() => onUpdateQuantity(item.dish.id, -1)}
                       className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 transition-colors cursor-pointer"
                     >
-                      {item.quantity === 1 ? <Trash2 className="w-3.5 h-3.5 text-rose-400" /> : <Minus className="w-3.5 h-3.5" />}
+                      {item.quantity === 1 ? (
+                        <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                      ) : (
+                        <Minus className="w-3.5 h-3.5" />
+                      )}
                     </button>
                     <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
                     <button

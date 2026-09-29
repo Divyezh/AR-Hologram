@@ -4,7 +4,7 @@ export interface NormalizedLandmark {
   z: number;
 }
 
-export type Handedness = 'Left' | 'Right';
+export type Handedness = "Left" | "Right";
 
 export interface HandTrackingResult {
   detected: boolean;

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Camera, CameraOff, RefreshCw, FlipHorizontal, Eye, EyeOff, Maximize2 } from 'lucide-react';
-import { CameraStatus } from '../../types/camera';
+import React from "react";
+import { Camera, CameraOff, RefreshCw, FlipHorizontal, Eye, EyeOff, Maximize2 } from "lucide-react";
+import { CameraStatus } from "../../types/camera";
 
 interface CameraControlsProps {
   status: CameraStatus;
@@ -27,8 +27,8 @@ export const CameraControls: React.FC<CameraControlsProps> = ({
   onToggleMirror,
   onToggleDebug,
 }) => {
-  const isStreaming = status === 'active';
-  const isRequesting = status === 'requesting';
+  const isStreaming = status === "active";
+  const isRequesting = status === "requesting";
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -84,9 +84,13 @@ export const CameraControls: React.FC<CameraControlsProps> = ({
 
           <button
             onClick={onToggleMirror}
-            title={isMirrored ? 'Mirrored Mode (Click to Unmirror)' : 'Normal Mode (Click to Mirror)'}
+            title={
+              isMirrored ? "Mirrored Mode (Click to Unmirror)" : "Normal Mode (Click to Mirror)"
+            }
             className={`p-2 rounded-full transition-all cursor-pointer ${
-              isMirrored ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'hover:bg-white/10 text-white/60'
+              isMirrored
+                ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                : "hover:bg-white/10 text-white/60"
             }`}
           >
             <FlipHorizontal className="w-4 h-4" />
@@ -94,9 +98,11 @@ export const CameraControls: React.FC<CameraControlsProps> = ({
 
           <button
             onClick={onToggleDebug}
-            title={debugMode ? 'Hide Neural Debug HUD' : 'Show Neural Debug HUD'}
+            title={debugMode ? "Hide Neural Debug HUD" : "Show Neural Debug HUD"}
             className={`p-2 rounded-full transition-all cursor-pointer ${
-              debugMode ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'hover:bg-white/10 text-white/60'
+              debugMode
+                ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                : "hover:bg-white/10 text-white/60"
             }`}
           >
             {debugMode ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}

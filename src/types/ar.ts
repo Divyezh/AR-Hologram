@@ -4,7 +4,7 @@ export interface ARStudioState {
   isModelLoaded: boolean;
   isTrackingReady: boolean;
   isHandDetected: boolean;
-  activeHandSide: 'Left' | 'Right' | null;
+  activeHandSide: "Left" | "Right" | null;
 
   // Selected Options
   selectedCharacterId: string;

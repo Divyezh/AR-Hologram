@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { Camera, Sparkles, ArrowRight } from 'lucide-react';
+import React from "react";
+import Link from "next/link";
+import { Camera, Sparkles, ArrowRight } from "lucide-react";
 
 export const CTA: React.FC = () => {
   return (
@@ -21,7 +21,8 @@ export const CTA: React.FC = () => {
               Ready to Experience The Magic?
             </h3>
             <p className="text-neutral-400 max-w-lg mb-8 text-sm sm:text-base leading-relaxed">
-              No app store install required. Runs directly in Chrome, Safari, Edge, and modern mobile browsers with WebGL.
+              No app store install required. Runs directly in Chrome, Safari, Edge, and modern
+              mobile browsers with WebGL.
             </p>
 
             <Link

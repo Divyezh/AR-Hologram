@@ -1,4 +1,4 @@
-import { Handedness } from './hand';
+import { Handedness } from "./hand";
 
 export interface PalmAnchor {
   detected: boolean;

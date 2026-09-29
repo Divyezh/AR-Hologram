@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
 export interface ViewportDimensions {
   containerWidth: number;
@@ -73,7 +73,7 @@ export function mapScreenUVToThreeWorld(
   const worldX = (uvX - 0.5) * planeWidth;
   // uvY: 0 = top (+height/2), 1 = bottom (-height/2)
   const worldY = (0.5 - uvY) * planeHeight;
-  
+
   // Z offset adjusted by MediaPipe relative z landmark
   // MediaPipe z is roughly around -0.1 to 0.1 normalized to hand size
   const worldZ = -rawZ * 2.5;

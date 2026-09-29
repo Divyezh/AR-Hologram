@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useMemo, useRef } from 'react';
-import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
+import React, { useMemo, useRef } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
 
 interface Burger3DModelProps {
   onTap?: () => void;
@@ -96,12 +96,7 @@ export const Burger3DModel: React.FC<Burger3DModelProps> = ({ onTap }) => {
       {/* 3. Bottom Brioche Bun */}
       <mesh position={[0, -0.42, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[1.05, 0.95, 0.28, 36]} />
-        <meshStandardMaterial
-          color="#c27d38"
-          roughness={0.65}
-          metalness={0.05}
-          bumpScale={0.05}
-        />
+        <meshStandardMaterial color="#c27d38" roughness={0.65} metalness={0.05} bumpScale={0.05} />
       </mesh>
       {/* Toasted bun bottom ring */}
       <mesh position={[0, -0.54, 0]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -119,11 +114,7 @@ export const Burger3DModel: React.FC<Burger3DModelProps> = ({ onTap }) => {
       <group position={[0, -0.19, 0]}>
         <mesh castShadow receiveShadow>
           <cylinderGeometry args={[1.22, 1.15, 0.08, 24]} />
-          <meshStandardMaterial
-            color="#22c55e"
-            roughness={0.4}
-            metalness={0.05}
-          />
+          <meshStandardMaterial color="#22c55e" roughness={0.4} metalness={0.05} />
         </mesh>
         {/* Ruffled leaf edge curls */}
         {Array.from({ length: 12 }).map((_, i) => {
@@ -146,11 +137,7 @@ export const Burger3DModel: React.FC<Burger3DModelProps> = ({ onTap }) => {
       {/* 6. Thick Flame-Grilled Prime Patty */}
       <mesh position={[0, 0.0, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[1.15, 1.15, 0.32, 36]} />
-        <meshStandardMaterial
-          color="#3c2214"
-          roughness={0.85}
-          metalness={0.05}
-        />
+        <meshStandardMaterial color="#3c2214" roughness={0.85} metalness={0.05} />
       </mesh>
       {/* Grilled Char Ridges */}
       {[-0.6, -0.2, 0.2, 0.6].map((x, i) => (
@@ -164,11 +151,7 @@ export const Burger3DModel: React.FC<Burger3DModelProps> = ({ onTap }) => {
       {/* Center melted cheese blanket */}
       <mesh position={[0, 0.19, 0]} castShadow>
         <boxGeometry args={[1.5, 0.05, 1.5]} />
-        <meshStandardMaterial
-          color="#f59e0b"
-          roughness={0.3}
-          metalness={0.1}
-        />
+        <meshStandardMaterial color="#f59e0b" roughness={0.3} metalness={0.1} />
       </mesh>
       {/* 4 Drooping Melted Corners */}
       {[
@@ -193,20 +176,12 @@ export const Burger3DModel: React.FC<Burger3DModelProps> = ({ onTap }) => {
         {/* Slice 1 */}
         <mesh position={[-0.32, 0, -0.15]} castShadow receiveShadow>
           <cylinderGeometry args={[0.62, 0.62, 0.14, 28]} />
-          <meshStandardMaterial
-            color="#dc2626"
-            roughness={0.25}
-            metalness={0.15}
-          />
+          <meshStandardMaterial color="#dc2626" roughness={0.25} metalness={0.15} />
         </mesh>
         {/* Slice 2 */}
         <mesh position={[0.34, 0.02, 0.18]} castShadow receiveShadow>
           <cylinderGeometry args={[0.6, 0.6, 0.14, 28]} />
-          <meshStandardMaterial
-            color="#ef4444"
-            roughness={0.25}
-            metalness={0.15}
-          />
+          <meshStandardMaterial color="#ef4444" roughness={0.25} metalness={0.15} />
         </mesh>
       </group>
 
@@ -227,38 +202,22 @@ export const Burger3DModel: React.FC<Burger3DModelProps> = ({ onTap }) => {
         {/* Bun Dome */}
         <mesh castShadow receiveShadow>
           <sphereGeometry args={[1.15, 36, 24, 0, Math.PI * 2, 0, Math.PI * 0.48]} />
-          <meshStandardMaterial
-            color="#c68642"
-            roughness={0.45}
-            metalness={0.08}
-          />
+          <meshStandardMaterial color="#c68642" roughness={0.45} metalness={0.08} />
         </mesh>
         {/* Bun Flat Rim Base */}
         <mesh position={[0, 0.05, 0]} castShadow>
           <cylinderGeometry args={[1.14, 1.12, 0.12, 36]} />
-          <meshStandardMaterial
-            color="#b87333"
-            roughness={0.55}
-          />
+          <meshStandardMaterial color="#b87333" roughness={0.55} />
         </mesh>
       </group>
 
       {/* 11. Roasted White Sesame Seeds on Top Bun Dome */}
       <group position={[0, 0, 0]}>
         {sesameSeeds.map((seed, index) => (
-          <mesh
-            key={`seed-${index}`}
-            position={seed.pos}
-            rotation={seed.rot}
-            castShadow
-          >
+          <mesh key={`seed-${index}`} position={seed.pos} rotation={seed.rot} castShadow>
             {/* Tiny sesame seed capsule shape */}
             <capsuleGeometry args={[0.022, 0.055, 6, 8]} />
-            <meshStandardMaterial
-              color="#fef3c7"
-              roughness={0.3}
-              metalness={0.1}
-            />
+            <meshStandardMaterial color="#fef3c7" roughness={0.3} metalness={0.1} />
           </mesh>
         ))}
       </group>

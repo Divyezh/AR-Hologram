@@ -1,14 +1,14 @@
-export type CameraFacingMode = 'user' | 'environment';
+export type CameraFacingMode = "user" | "environment";
 
-export type CameraStatus = 'idle' | 'requesting' | 'active' | 'error' | 'unsupported';
+export type CameraStatus = "idle" | "requesting" | "active" | "error" | "unsupported";
 
 export type CameraErrorType =
-  | 'NotAllowedError'
-  | 'NotFoundError'
-  | 'NotReadableError'
-  | 'OverconstrainedError'
-  | 'UnsupportedError'
-  | 'UnknownError';
+  | "NotAllowedError"
+  | "NotFoundError"
+  | "NotReadableError"
+  | "OverconstrainedError"
+  | "UnsupportedError"
+  | "UnknownError";
 
 export interface CameraResolution {
   width: number;

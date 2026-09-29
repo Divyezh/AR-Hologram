@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   ChevronLeft,
   RotateCcw,
@@ -8,18 +8,20 @@ import {
   ShoppingBag,
   Info,
   SwitchCamera,
-  Flame,
-  Clock,
-  Sparkles,
   Camera,
-  CameraOff,
   ZoomIn,
   ZoomOut,
-} from 'lucide-react';
-import { InteractiveFoodScene } from './InteractiveFoodScene';
-import { DishItem, RESTAURANT_MENU, RESTAURANT_INFO } from '../../data/restaurantMenu';
-import { useCamera } from '../../hooks/useCamera';
-import { soundManager } from '../../lib/audio/soundManager';
+  QrCode,
+  Anchor,
+  Compass,
+  Sparkles,
+  CheckCircle2,
+} from "lucide-react";
+import { InteractiveFoodScene } from "./InteractiveFoodScene";
+import { DishItem, RESTAURANT_MENU, RESTAURANT_INFO } from "../../data/restaurantMenu";
+import { useCamera } from "../../hooks/useCamera";
+import { soundManager } from "../../lib/audio/soundManager";
+import { scanQRCodeFromVideo } from "../../lib/qr/qrService";
 
 interface RestaurantARCameraViewProps {
   currentDish: DishItem;
@@ -50,19 +52,30 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
     startCamera,
     stopCamera,
     toggleFacingMode,
-    toggleMirrored,
   } = useCamera();
 
   const [isAutoRotate, setIsAutoRotate] = useState<boolean>(false);
   const [scale, setScale] = useState<number>(1.0);
   const [resetPulse, setResetPulse] = useState<boolean>(false);
-  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  // Desk Surface Anchor & Gyro Stabilization state
+  const [isDeskAnchored, setIsDeskAnchored] = useState<boolean>(true);
+  const [triggerTurningAnimToken, setTriggerTurningAnimToken] = useState<number>(1);
+  const [qrAnchorPos, setQrAnchorPos] = useState<{ x: number; y: number } | null>(null);
+  const [qrToastMessage, setQrToastMessage] = useState<string | null>(null);
+  const [isQrScannerActive, setIsQrScannerActive] = useState<boolean>(true);
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const qrCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const animFrameIdRef = useRef<number | null>(null);
+  const lastScanTimeRef = useRef<number>(0);
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Automatically start camera on mount for live dining AR experience
   useEffect(() => {
-    startCamera('environment').catch(() => {
+    startCamera("environment").catch(() => {
       // If environment camera fails, fallback to user camera
-      startCamera('user').catch(() => {});
+      startCamera("user").catch(() => {});
     });
 
     return () => {
@@ -77,14 +90,103 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
     }
   }, [stream]);
 
+  // Trigger initial turning animation on mount
+  useEffect(() => {
+    soundManager.playOrderBell();
+    soundManager.playSizzle();
+    setTriggerTurningAnimToken((t) => t + 1);
+  }, []);
+
+  // Background Live QR Code Detection in AR Camera View
+  // If the user points camera at any QR code on desk or phone screen:
+  // Anchors dish to that position and plays the 360° turning entrance animation!
+  useEffect(() => {
+    if (!isQrScannerActive || !stream) return;
+
+    let active = true;
+
+    const checkQrFrame = async (timestamp: number) => {
+      if (!active) return;
+
+      // Scan every 140ms so video & 3D canvas stay 60 FPS smooth
+      if (timestamp - lastScanTimeRef.current >= 140) {
+        lastScanTimeRef.current = timestamp;
+
+        const video = videoRef.current;
+        if (video && video.readyState >= video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
+          try {
+            const result = await scanQRCodeFromVideo(video, qrCanvasRef.current, RESTAURANT_MENU);
+            if (result && result.data && active) {
+              // We found a QR code on the desk or phone screen!
+              soundManager.playOrderBell();
+              soundManager.playSizzle();
+
+              if (typeof navigator !== "undefined" && navigator.vibrate) {
+                try {
+                  navigator.vibrate([80, 40, 80]);
+                } catch {}
+              }
+
+              // Update QR anchor position
+              if (result.center) {
+                setQrAnchorPos(result.center);
+              }
+
+              // Trigger 360° Turning Entrance Animation!
+              setTriggerTurningAnimToken((prev) => prev + 1);
+
+              // If a specific dish was encoded in the QR code, switch to it!
+              if (result.matchedDish && result.matchedDish.id !== currentDish.id) {
+                onSelectDish(result.matchedDish);
+                setQrToastMessage(`🎯 QR Scanned: ${result.matchedDish.name} summoned on desk!`);
+              } else {
+                setQrToastMessage("🎯 QR Detected on Desk! Dish locked & summoned");
+              }
+
+              if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+              toastTimeoutRef.current = setTimeout(() => {
+                setQrToastMessage(null);
+              }, 3500);
+
+              // Pause scanner briefly so it doesn't repeatedly trigger every 140ms
+              lastScanTimeRef.current = timestamp + 2500;
+            }
+          } catch {}
+        }
+      }
+
+      if (active) {
+        animFrameIdRef.current = requestAnimationFrame(checkQrFrame);
+      }
+    };
+
+    animFrameIdRef.current = requestAnimationFrame(checkQrFrame);
+
+    return () => {
+      active = false;
+      if (animFrameIdRef.current) {
+        cancelAnimationFrame(animFrameIdRef.current);
+        animFrameIdRef.current = null;
+      }
+    };
+  }, [isQrScannerActive, stream, currentDish.id, onSelectDish]);
+
   const handleReset = () => {
     soundManager.playReset();
     setScale(1.0);
+    setQrAnchorPos(null);
     setResetPulse(true);
+    setTriggerTurningAnimToken((t) => t + 1);
     setTimeout(() => setResetPulse(false), 500);
   };
 
-  const isCameraLive = cameraStatus === 'active';
+  const handleManualSummon = () => {
+    soundManager.playOrderBell();
+    soundManager.playSizzle();
+    setTriggerTurningAnimToken((t) => t + 1);
+  };
+
+  const isCameraLive = cameraStatus === "active";
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black text-white select-none">
@@ -97,37 +199,33 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
             playsInline
             muted
             className={`w-full h-full object-cover transition-opacity duration-700 ${
-              isMirrored ? 'scale-x-[-1]' : ''
+              isMirrored ? "scale-x-[-1]" : ""
             }`}
           />
         ) : (
           /* Ambient Restaurant Table Backdrop if camera is inactive/blocked */
           <div className="w-full h-full bg-[#120d0a] flex items-center justify-center relative overflow-hidden">
-            {/* Table Surface Gradient */}
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-[#2a170e]/80 via-[#140b07] to-black" />
-            {/* Subtle dining cloth texture grid */}
             <div
               className="absolute inset-0 opacity-15"
               style={{
-                backgroundImage:
-                  'radial-gradient(rgba(245, 158, 11, 0.4) 1px, transparent 1px)',
-                backgroundSize: '32px 32px',
+                backgroundImage: "radial-gradient(rgba(245, 158, 11, 0.4) 1px, transparent 1px)",
+                backgroundSize: "32px 32px",
               }}
             />
-            {/* Camera prompt pill */}
             <div className="relative z-10 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-xs text-white/70 flex items-center gap-2">
               <Camera className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
               <span>
-                {cameraStatus === 'requesting'
-                  ? 'Requesting camera access...'
-                  : 'Tabletop AR Mode Active'}
+                {cameraStatus === "requesting"
+                  ? "Requesting camera access..."
+                  : "Desk Surface AR Mode Active"}
               </span>
             </div>
           </div>
         )}
 
         {/* Soft vignette overlay */}
-        <div className="absolute inset-0 bg-radial-[circle_at_center,transparent_30%,rgba(0,0,0,0.6)_100%] pointer-events-none" />
+        <div className="absolute inset-0 bg-radial-[circle_at_center,transparent_35%,rgba(0,0,0,0.55)_100%] pointer-events-none" />
       </div>
 
       {/* 2. Three.js Interactive 3D Food Scene (Canvas) */}
@@ -140,6 +238,14 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
           scale={scale}
           onScaleChange={setScale}
           onResetTriggered={handleReset}
+          isDeskAnchored={isDeskAnchored}
+          onToggleDeskAnchor={() => setIsDeskAnchored(!isDeskAnchored)}
+          triggerTurningAnimToken={triggerTurningAnimToken}
+          qrAnchorPos={qrAnchorPos}
+          onTapSurface={() => {
+            // Replay gentle turning effect when placing dish on new spot
+            soundManager.playSizzle();
+          }}
         />
       </div>
 
@@ -159,43 +265,39 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
             <span>{RESTAURANT_INFO.tableNumber}</span>
           </div>
+
+          {/* Desk Surface Anchor Toggle */}
+          <button
+            onClick={() => {
+              soundManager.playClick();
+              setIsDeskAnchored(!isDeskAnchored);
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-xl border text-xs font-semibold shadow-lg transition-all cursor-pointer ${
+              isDeskAnchored
+                ? "bg-amber-500/25 border-amber-400/50 text-amber-300"
+                : "bg-black/50 border-white/15 text-white/60"
+            }`}
+            title="Desk Surface Stabilization: keeps plate resting flat on table"
+          >
+            <Anchor className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Desk Surface:</span>
+            <span>{isDeskAnchored ? "Grounded 📌" : "Free 🪶"}</span>
+          </button>
         </div>
 
-        {/* Center: Gesture Control Guide Pills (Directly from User Diagram) */}
-        <div className="hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-2xl border border-white/15 text-[11px] text-white/90 font-medium pointer-events-auto shadow-xl">
+        {/* Center: AR Desk Guidance Pill */}
+        <div className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-2xl border border-white/15 text-[11px] text-white/90 font-medium pointer-events-auto shadow-xl">
           <span className="flex items-center gap-1 text-amber-300">
-            <span>👆</span>
-            <span>Rotate</span>
+            <Compass className="w-3.5 h-3.5 text-amber-400" />
+            <span>Point at desk surface</span>
           </span>
           <span className="text-white/20">•</span>
-          <span className="flex items-center gap-1 text-cyan-300">
-            <span>🤏</span>
-            <span>Pinch / Zoom</span>
-          </span>
+          <span className="text-cyan-300">👆 Tap table to place</span>
           <span className="text-white/20">•</span>
-          <span className="flex items-center gap-1 text-emerald-300">
-            <span>✋</span>
-            <span>Move</span>
-          </span>
-          <span className="text-white/20">•</span>
-          <button
-            onClick={() => onTapInfo(currentDish)}
-            className="flex items-center gap-1 text-orange-300 hover:text-white transition-colors cursor-pointer"
-          >
-            <span>👆</span>
-            <span>Tap → Info</span>
-          </button>
-          <span className="text-white/20">•</span>
-          <button
-            onClick={handleReset}
-            className="flex items-center gap-1 text-violet-300 hover:text-white transition-colors cursor-pointer"
-          >
-            <span>👆👆</span>
-            <span>Reset</span>
-          </button>
+          <span className="text-emerald-300">📷 Point at QR to summon</span>
         </div>
 
-        {/* Right: Camera Switch & Cart Trigger */}
+        {/* Right: Camera Switch, Summon Spin, and Cart Trigger */}
         <div className="flex items-center gap-2 pointer-events-auto">
           {/* Flip Front/Back Camera */}
           <button
@@ -206,31 +308,28 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
             <SwitchCamera className="w-4 h-4" />
           </button>
 
+          {/* 360° Turning Entrance Animation Summon Button */}
+          <button
+            onClick={handleManualSummon}
+            title="Trigger 360° Turning Animation on Desk"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-amber-500/20 hover:bg-amber-500/35 backdrop-blur-xl border border-amber-400/40 text-amber-300 text-xs font-bold transition-all cursor-pointer shadow-lg active:scale-95"
+          >
+            <Sparkles
+              className="w-3.5 h-3.5 text-amber-300 animate-spin"
+              style={{ animationDuration: "3s" }}
+            />
+            <span className="hidden sm:inline">Spin Entrance</span>
+          </button>
+
           {/* Quick Reset Button */}
           <button
             onClick={handleReset}
             title="Double-Tap anywhere or click to reset view"
             className={`p-2.5 rounded-full bg-black/50 hover:bg-black/70 backdrop-blur-xl border border-white/15 text-white/80 hover:text-white transition-all cursor-pointer ${
-              resetPulse ? 'scale-125 border-amber-400 text-amber-400' : ''
+              resetPulse ? "scale-125 border-amber-400 text-amber-400" : ""
             }`}
           >
             <RotateCcw className="w-4 h-4" />
-          </button>
-
-          {/* Auto-rotate Toggle */}
-          <button
-            onClick={() => {
-              soundManager.playClick();
-              setIsAutoRotate(!isAutoRotate);
-            }}
-            title={isAutoRotate ? 'Pause 360° Spin' : 'Start 360° Spin'}
-            className={`p-2.5 rounded-full backdrop-blur-xl border transition-all cursor-pointer ${
-              isAutoRotate
-                ? 'bg-amber-500 text-black border-amber-400 shadow-md shadow-amber-500/30'
-                : 'bg-black/50 hover:bg-black/70 text-white/80 border-white/15'
-            }`}
-          >
-            <RefreshCw className={`w-4 h-4 ${isAutoRotate ? 'animate-spin' : ''}`} />
           </button>
 
           {/* Cart Tray */}
@@ -239,16 +338,23 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
             className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-lg shadow-amber-500/25 transition-all cursor-pointer"
           >
             <ShoppingBag className="w-4 h-4" />
-            <span>
-              {cartCount > 0 ? `${cartCount} • ₹${cartTotal}` : 'Tray'}
-            </span>
+            <span>{cartCount > 0 ? `${cartCount} • ₹${cartTotal}` : "Tray"}</span>
           </button>
         </div>
       </header>
 
-      {/* 4. Floating On-Screen Zoom Controls (+ / - / % indicator) */}
+      {/* 4. Live Scanned QR Notification Banner / Toast */}
+      {qrToastMessage && (
+        <div className="absolute top-18 inset-x-4 z-30 flex justify-center pointer-events-none animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="px-4 py-2.5 rounded-2xl bg-emerald-950/90 backdrop-blur-2xl border border-emerald-400/50 text-emerald-200 text-xs font-bold shadow-[0_10px_30px_rgba(16,185,129,0.35)] flex items-center gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 animate-bounce" />
+            <span>{qrToastMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Floating On-Screen Zoom Controls (+ / - / % indicator) */}
       <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-1.5 p-1.5 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/15 shadow-2xl pointer-events-auto">
-        {/* Zoom In Button */}
         <button
           onClick={() => {
             soundManager.playClick();
@@ -260,7 +366,6 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
           <ZoomIn className="w-4 h-4 text-amber-400" />
         </button>
 
-        {/* Current Zoom Percentage - Tap to reset */}
         <button
           onClick={handleReset}
           title="Tap to Reset Zoom to 100%"
@@ -269,7 +374,6 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
           {Math.round(scale * 100)}%
         </button>
 
-        {/* Zoom Out Button */}
         <button
           onClick={() => {
             soundManager.playClick();
@@ -282,24 +386,21 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
         </button>
       </div>
 
-      {/* 5. Bottom Main Dish Card & Switcher (User Diagram Architecture) */}
-      <footer className="absolute bottom-4 inset-x-4 z-20 flex flex-col items-center gap-3 pointer-events-none">
-        {/* Mobile Gestures Pill (visible on small screens) */}
-        <div className="flex md:hidden items-center gap-2 px-3 py-1.5 rounded-full bg-black/65 backdrop-blur-xl border border-white/15 text-[10px] text-white/85 font-mono pointer-events-auto shadow-lg">
-          <span>👆 Drag rotate</span>
+      {/* 6. Bottom Main Dish Card & Switcher */}
+      <footer className="absolute bottom-4 inset-x-4 z-20 flex flex-col items-center gap-2.5 pointer-events-none">
+        {/* Mobile Instructions Pill */}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-xl border border-white/15 text-[10px] text-white/90 font-medium pointer-events-auto shadow-lg">
+          <span className="text-amber-400">📐 Point camera at desk</span>
           <span>•</span>
-          <span>🤏 Pinch / 🔍 Zoom</span>
+          <span>👆 Tap table to place</span>
           <span>•</span>
-          <button onClick={handleReset} className="text-amber-400 font-bold underline cursor-pointer">
-            👆👆 Reset
-          </button>
+          <span>📷 Point at QR</span>
         </div>
 
         {/* Featured Live Dish Action Card */}
         <div className="w-full max-w-xl p-4 sm:p-5 rounded-[28px] bg-neutral-950/85 backdrop-blur-2xl border border-white/15 shadow-[0_16px_40px_rgba(0,0,0,0.8)] pointer-events-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Dish Details */}
           <div className="flex items-center gap-3.5 w-full sm:w-auto">
-            {/* Food Emoji Avatar */}
             <div
               onClick={() => onTapInfo(currentDish)}
               className="w-14 h-14 rounded-2xl bg-white/8 hover:bg-white/12 border border-white/10 flex items-center justify-center text-3xl shrink-0 cursor-pointer shadow-inner transition-transform active:scale-95"
@@ -313,15 +414,15 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
                   {currentDish.badge}
                 </span>
-                <span className="text-[11px] text-white/50">{Math.round(scale * 100)}% portion</span>
+                <span className="text-[11px] text-white/50">
+                  {Math.round(scale * 100)}% portion
+                </span>
               </div>
 
-              {/* Dish Name */}
               <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-tight">
                 {currentDish.name}
               </h2>
 
-              {/* Price Tag (₹249 Classic Burger) */}
               <div className="text-xl sm:text-2xl font-black text-amber-400 mt-0.5">
                 {currentDish.currency}
                 {currentDish.price}
@@ -331,7 +432,6 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            {/* Info Trigger Button */}
             <button
               onClick={() => onTapInfo(currentDish)}
               className="p-3.5 rounded-2xl bg-white/10 hover:bg-white/18 text-white/80 hover:text-white transition-colors cursor-pointer"
@@ -340,7 +440,6 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
               <Info className="w-4 h-4" />
             </button>
 
-            {/* Add to Order Button */}
             <button
               onClick={() => {
                 soundManager.playClick();
@@ -364,19 +463,21 @@ export const RestaurantARCameraView: React.FC<RestaurantARCameraViewProps> = ({
               key={dish.id}
               onClick={() => {
                 soundManager.playSizzle();
+                soundManager.playOrderBell();
                 onSelectDish(dish);
+                setTriggerTurningAnimToken((t) => t + 1);
               }}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 currentDish.id === dish.id
-                  ? 'bg-white text-black shadow-md shadow-white/20'
-                  : 'text-white/70 hover:text-white hover:bg-white/10'
+                  ? "bg-white text-black shadow-md shadow-white/20"
+                  : "text-white/70 hover:text-white hover:bg-white/10"
               }`}
             >
               <span>{dish.emoji}</span>
               <span>{dish.name}</span>
               <span
                 className={`text-[11px] ${
-                  currentDish.id === dish.id ? 'text-neutral-800' : 'text-amber-400'
+                  currentDish.id === dish.id ? "text-neutral-800" : "text-amber-400"
                 }`}
               >
                 {dish.currency}

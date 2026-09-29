@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useEffect, useMemo } from 'react';
-import { useGLTF, useAnimations } from '@react-three/drei';
-import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { CharacterConfig } from '../../types/character';
+import React, { useEffect, useMemo } from "react";
+import { useGLTF, useAnimations } from "@react-three/drei";
+import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
+import { CharacterConfig } from "../../types/character";
 
 interface DogCharacterProps {
   config: CharacterConfig;
@@ -24,7 +24,7 @@ export const DogCharacter: React.FC<DogCharacterProps> = ({ config, animationNam
     const targetAnim =
       actions[animationName] ||
       actions[config.defaultAnimation] ||
-      actions['Survey'] ||
+      actions["Survey"] ||
       Object.values(actions)[0];
 
     if (targetAnim) {
@@ -47,4 +47,4 @@ export const DogCharacter: React.FC<DogCharacterProps> = ({ config, animationNam
 };
 
 // Preload model
-useGLTF.preload('/models/dog/dog.glb');
+useGLTF.preload("/models/dog/dog.glb");

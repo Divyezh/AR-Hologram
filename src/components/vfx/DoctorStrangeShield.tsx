@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useRef, useEffect, useMemo, useState } from 'react';
-import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
-import { EffectConfig } from '../../types/effects';
+import React, { useRef, useEffect, useMemo, useState } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
+import { EffectConfig } from "../../types/effects";
 
 interface DoctorStrangeShieldProps {
   effect: EffectConfig;
@@ -101,25 +101,25 @@ export const DoctorStrangeShield: React.FC<DoctorStrangeShieldProps> = ({
 
   // Initialize and manage HTML5 video element with seamless loop & hardware acceleration
   useEffect(() => {
-    const video = document.createElement('video');
-    video.src = '/dr-strange-power.mp4';
-    video.crossOrigin = 'anonymous';
+    const video = document.createElement("video");
+    video.src = "/dr-strange-power.mp4";
+    video.crossOrigin = "anonymous";
     video.playsInline = true;
     video.muted = false; // Start with sound enabled
     video.autoplay = true;
     video.loop = true;
-    video.preload = 'auto';
-    video.setAttribute('playsinline', 'true');
-    video.setAttribute('webkit-playsinline', 'true');
+    video.preload = "auto";
+    video.setAttribute("playsinline", "true");
+    video.setAttribute("webkit-playsinline", "true");
 
     // Attach off-screen to DOM so Chromium & mobile hardware decoders run smoothly at 60fps
-    video.style.position = 'fixed';
-    video.style.top = '-9999px';
-    video.style.left = '-9999px';
-    video.style.width = '1px';
-    video.style.height = '1px';
-    video.style.opacity = '0';
-    video.style.pointerEvents = 'none';
+    video.style.position = "fixed";
+    video.style.top = "-9999px";
+    video.style.left = "-9999px";
+    video.style.width = "1px";
+    video.style.height = "1px";
+    video.style.opacity = "0";
+    video.style.pointerEvents = "none";
     document.body.appendChild(video);
     videoRef.current = video;
 
@@ -146,20 +146,20 @@ export const DoctorStrangeShield: React.FC<DoctorStrangeShieldProps> = ({
         video.play().catch(() => {});
       });
     };
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
 
     const handleTimeUpdate = () => {
       if (video.currentTime >= LOOP_END) {
         video.currentTime = LOOP_START;
       }
     };
-    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener("timeupdate", handleTimeUpdate);
 
     const handleEnded = () => {
       video.currentTime = LOOP_START;
       video.play().catch(() => {});
     };
-    video.addEventListener('ended', handleEnded);
+    video.addEventListener("ended", handleEnded);
 
     video.play().catch(() => {
       video.muted = true;
@@ -174,19 +174,19 @@ export const DoctorStrangeShield: React.FC<DoctorStrangeShieldProps> = ({
         video.play().catch(() => {});
       }
     };
-    window.addEventListener('touchstart', unlockHandler, { passive: true });
-    window.addEventListener('click', unlockHandler, { passive: true });
-    window.addEventListener('pointerdown', unlockHandler, { passive: true });
+    window.addEventListener("touchstart", unlockHandler, { passive: true });
+    window.addEventListener("click", unlockHandler, { passive: true });
+    window.addEventListener("pointerdown", unlockHandler, { passive: true });
 
     return () => {
-      window.removeEventListener('touchstart', unlockHandler);
-      window.removeEventListener('click', unlockHandler);
-      window.removeEventListener('pointerdown', unlockHandler);
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-      video.removeEventListener('ended', handleEnded);
+      window.removeEventListener("touchstart", unlockHandler);
+      window.removeEventListener("click", unlockHandler);
+      window.removeEventListener("pointerdown", unlockHandler);
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+      video.removeEventListener("ended", handleEnded);
       video.pause();
-      video.removeAttribute('src');
+      video.removeAttribute("src");
       video.load();
       if (video.parentNode) {
         video.parentNode.removeChild(video);
@@ -282,7 +282,7 @@ export const DoctorStrangeShield: React.FC<DoctorStrangeShieldProps> = ({
     // Update spark particles
     if (sparkPointsRef.current) {
       const geom = sparkPointsRef.current.geometry;
-      const posAttr = geom.getAttribute('position') as THREE.BufferAttribute;
+      const posAttr = geom.getAttribute("position") as THREE.BufferAttribute;
       const arr = posAttr.array as Float32Array;
 
       for (let i = 0; i < sparkCount; i++) {
@@ -326,11 +326,7 @@ export const DoctorStrangeShield: React.FC<DoctorStrangeShieldProps> = ({
       <group ref={mandalaGroupRef}>
         {/* Layer A: Primary Black-Background-Removed Tao Mandala Video */}
         {chromaMaterial && (
-          <mesh
-            material={chromaMaterial}
-            rotation={[-Math.PI / 2, 0, 0]}
-            position={[0, 0.002, 0]}
-          >
+          <mesh material={chromaMaterial} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, 0]}>
             {/* Aspect ratio matches 16:9 video so mandala is perfectly circular */}
             <planeGeometry args={[planeWidth, planeHeight]} />
           </mesh>

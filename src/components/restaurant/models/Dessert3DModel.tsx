@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import * as THREE from 'three';
+import React from "react";
+import * as THREE from "three";
 
 interface Dessert3DModelProps {
   onTap?: () => void;

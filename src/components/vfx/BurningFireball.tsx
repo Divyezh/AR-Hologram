@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useRef, useMemo } from 'react';
-import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
-import { EffectConfig } from '../../types/effects';
+import React, { useRef, useMemo } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
+import { EffectConfig } from "../../types/effects";
 
 interface BurningFireballProps {
   effect: EffectConfig;
@@ -86,7 +86,7 @@ export const BurningFireball: React.FC<BurningFireballProps> = ({
     // 5. Rising embers simulation
     if (embersRef.current) {
       const geom = embersRef.current.geometry;
-      const posAttr = geom.getAttribute('position') as THREE.BufferAttribute;
+      const posAttr = geom.getAttribute("position") as THREE.BufferAttribute;
       const arr = posAttr.array as Float32Array;
 
       for (let i = 0; i < emberCount; i++) {
@@ -183,11 +183,7 @@ export const BurningFireball: React.FC<BurningFireballProps> = ({
       {/* 5. Palm Ground Ring of Fire */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.22, 0]}>
         <torusGeometry args={[0.38, 0.018, 12, 36]} />
-        <meshStandardMaterial
-          color="#ffaa00"
-          emissive="#ff4400"
-          emissiveIntensity={3.5}
-        />
+        <meshStandardMaterial color="#ffaa00" emissive="#ff4400" emissiveIntensity={3.5} />
       </mesh>
 
       {/* 6. Rising Ember Sparks */}

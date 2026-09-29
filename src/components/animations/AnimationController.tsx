@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { GestureDetectionResult } from '../../types/gestures';
+import { useEffect, useRef } from "react";
+import { GestureDetectionResult } from "../../types/gestures";
 
 interface AnimationControllerProps {
   gestureData: GestureDetectionResult | null;
@@ -22,14 +22,14 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
     lastGestureRef.current = currentGesture;
 
     // React to specific gestures
-    if (currentGesture === 'PEACE' || currentGesture === 'ROCK') {
-      onTriggerAnimation('Dance');
-    } else if (currentGesture === 'FIST') {
-      onTriggerAnimation('Jump');
-    } else if (currentGesture === 'THUMBS_UP') {
-      onTriggerAnimation('ThumbsUp');
-    } else if (currentGesture === 'POINT') {
-      onTriggerAnimation('Wave');
+    if (currentGesture === "PEACE" || currentGesture === "ROCK") {
+      onTriggerAnimation("Dance");
+    } else if (currentGesture === "FIST") {
+      onTriggerAnimation("Jump");
+    } else if (currentGesture === "THUMBS_UP") {
+      onTriggerAnimation("ThumbsUp");
+    } else if (currentGesture === "POINT") {
+      onTriggerAnimation("Wave");
     }
   }, [gestureData, onTriggerAnimation]);
 

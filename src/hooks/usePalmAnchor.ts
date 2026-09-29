@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useRef, useMemo, useCallback } from 'react';
-import { PalmAnchor } from '../types/palm';
-import { MultiHandTrackingResult } from '../types/hand';
-import { ViewportDimensions } from '../lib/ar/coordinateMapping';
-import { AnchorSmoother } from '../lib/ar/smoothing';
-import { computePalmAnchor, createDefaultPalmAnchor } from '../lib/ar/anchorUtils';
-import { AR_CONFIG } from '../config/ar.config';
+import { useRef, useMemo, useCallback } from "react";
+import { PalmAnchor } from "../types/palm";
+import { MultiHandTrackingResult } from "../types/hand";
+import { ViewportDimensions } from "../lib/ar/coordinateMapping";
+import { AnchorSmoother } from "../lib/ar/smoothing";
+import { computePalmAnchor, createDefaultPalmAnchor } from "../lib/ar/anchorUtils";
+import { AR_CONFIG } from "../config/ar.config";
 
 export function usePalmAnchor() {
   const anchorRef = useRef<PalmAnchor>(createDefaultPalmAnchor());

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { CameraDeviceInfo, CameraResolution } from '../../types/camera';
-import { X, Cpu, Video, Layers } from 'lucide-react';
+import React from "react";
+import { CameraDeviceInfo, CameraResolution } from "../../types/camera";
+import { X, Cpu, Video, Layers } from "lucide-react";
 
 interface DebugPanelProps {
   isOpen: boolean;
@@ -50,11 +50,13 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
           <div className="bg-neutral-900/80 rounded-xl p-3 space-y-1 font-mono text-[11px] border border-white/5">
             <div className="flex justify-between">
               <span className="text-neutral-500">Resolution:</span>
-              <span className="text-white">{resolution.width} x {resolution.height}</span>
+              <span className="text-white">
+                {resolution.width} x {resolution.height}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-neutral-500">Mirrored:</span>
-              <span className="text-white">{isMirrored ? 'Yes (Front mode)' : 'No'}</span>
+              <span className="text-white">{isMirrored ? "Yes (Front mode)" : "No"}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-neutral-500">Devices Detected:</span>
@@ -62,7 +64,7 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
             </div>
             <div className="flex justify-between">
               <span className="text-neutral-500">Active Device:</span>
-              <span className="text-white truncate max-w-30">{activeDeviceId || 'Default'}</span>
+              <span className="text-white truncate max-w-30">{activeDeviceId || "Default"}</span>
             </div>
           </div>
         </div>
@@ -74,7 +76,7 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
           <div className="bg-neutral-900/80 rounded-xl p-3 space-y-1 font-mono text-[11px] border border-white/5">
             <div className="flex justify-between">
               <span className="text-neutral-500">Render FPS:</span>
-              <span className={fps >= 50 ? 'text-emerald-400' : 'text-amber-400'}>{fps}</span>
+              <span className={fps >= 50 ? "text-emerald-400" : "text-amber-400"}>{fps}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-neutral-500">Vision Latency:</span>
@@ -94,7 +96,8 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
         <div className="pt-2 border-t border-white/10 text-[11px] text-neutral-400 leading-relaxed">
           <p className="font-semibold text-neutral-200 mb-1">Hand Landmark Tracking:</p>
           <p>
-            MediaPipe detects 21 3D joint landmarks. The palm normal vector is computed via cross-product of the vertical and transverse palm axes and smoothed using slerp/lerp.
+            MediaPipe detects 21 3D joint landmarks. The palm normal vector is computed via
+            cross-product of the vertical and transverse palm axes and smoothed using slerp/lerp.
           </p>
         </div>
       </div>

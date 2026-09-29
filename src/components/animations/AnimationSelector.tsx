@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { CHARACTERS } from '../../data/characters';
-import { DEFAULT_ANIMATIONS } from '../../constants/animations';
-import { Play } from 'lucide-react';
+import React from "react";
+import { CHARACTERS } from "../../data/characters";
+import { DEFAULT_ANIMATIONS } from "../../constants/animations";
+import { Play } from "lucide-react";
 
 interface AnimationSelectorProps {
   selectedCharacterId: string;
@@ -27,7 +27,7 @@ export const AnimationSelector: React.FC<AnimationSelectorProps> = ({
       {animations.map((animName) => {
         const isSelected = selectedAnimationId === animName;
         const iconConfig = DEFAULT_ANIMATIONS.find((a) => a.id === animName);
-        const icon = iconConfig ? iconConfig.icon : '⚡';
+        const icon = iconConfig ? iconConfig.icon : "⚡";
 
         return (
           <button
@@ -35,8 +35,8 @@ export const AnimationSelector: React.FC<AnimationSelectorProps> = ({
             onClick={() => onSelectAnimation(animName)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shrink-0 cursor-pointer ${
               isSelected
-                ? 'bg-linear-to-r from-cyan-500 to-blue-500 text-black font-semibold shadow-[0_0_12px_rgba(6,182,212,0.4)] scale-105'
-                : 'bg-neutral-900/80 hover:bg-neutral-800 text-neutral-300 border border-white/10 hover:border-white/20'
+                ? "bg-linear-to-r from-cyan-500 to-blue-500 text-black font-semibold shadow-[0_0_12px_rgba(6,182,212,0.4)] scale-105"
+                : "bg-neutral-900/80 hover:bg-neutral-800 text-neutral-300 border border-white/10 hover:border-white/20"
             }`}
           >
             <span>{icon}</span>

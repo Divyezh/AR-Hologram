@@ -1,23 +1,20 @@
-'use client';
+"use client";
 
-import React, { useRef, useMemo } from 'react';
-import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
-import { MagicRingShader } from '../../lib/three/shaders';
-import { ParticleField } from './ParticleField';
-import { GlowEffect } from './GlowEffect';
-import { HologramEffect } from './HologramEffect';
-import { EffectConfig } from '../../types/effects';
+import React, { useRef, useMemo } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
+import { MagicRingShader } from "../../lib/three/shaders";
+import { ParticleField } from "./ParticleField";
+import { GlowEffect } from "./GlowEffect";
+import { HologramEffect } from "./HologramEffect";
+import { EffectConfig } from "../../types/effects";
 
 interface MagicRingProps {
   effect: EffectConfig;
   particlesEnabled?: boolean;
 }
 
-export const MagicRing: React.FC<MagicRingProps> = ({
-  effect,
-  particlesEnabled = true,
-}) => {
+export const MagicRing: React.FC<MagicRingProps> = ({ effect, particlesEnabled = true }) => {
   const ringDiscRef = useRef<THREE.Mesh | null>(null);
   const gyro1Ref = useRef<THREE.Group | null>(null);
   const gyro2Ref = useRef<THREE.Group | null>(null);
@@ -130,11 +127,7 @@ export const MagicRing: React.FC<MagicRingProps> = ({
       </group>
 
       {/* 5. Inner sacred geometry regular polygon (12-sided) */}
-      <mesh
-        ref={innerPolygonRef}
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.01, 0]}
-      >
+      <mesh ref={innerPolygonRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
         <ringGeometry args={[radius * 0.38, radius * 0.4, 12]} />
         <meshBasicMaterial
           color={effect.glowColor}

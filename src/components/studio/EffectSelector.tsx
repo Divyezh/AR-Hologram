@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { EFFECTS } from '../../data/effects';
-import { Wand2, Flame, Shield, Zap, Orbit, Wind } from 'lucide-react';
+import React from "react";
+import { EFFECTS } from "../../data/effects";
+import { Wand2, Flame, Shield, Zap, Orbit, Wind } from "lucide-react";
 
 interface EffectSelectorProps {
   selectedId: string;
@@ -12,15 +12,20 @@ interface EffectSelectorProps {
 export const EffectSelector: React.FC<EffectSelectorProps> = ({ selectedId, onSelect }) => {
   const getIcon = (type: string) => {
     switch (type) {
-      case 'naruto':
-        return <Wind className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '3s' }} />;
-      case 'doctor-strange':
+      case "naruto":
+        return (
+          <Wind
+            className="w-3.5 h-3.5 text-cyan-400 animate-spin"
+            style={{ animationDuration: "3s" }}
+          />
+        );
+      case "doctor-strange":
         return <Shield className="w-3.5 h-3.5 text-amber-400" />;
-      case 'fireball':
+      case "fireball":
         return <Flame className="w-3.5 h-3.5 text-orange-400" />;
-      case 'lightning':
+      case "lightning":
         return <Zap className="w-3.5 h-3.5 text-cyan-400" />;
-      case 'cosmic':
+      case "cosmic":
       default:
         return <Orbit className="w-3.5 h-3.5 text-purple-400" />;
     }
@@ -33,9 +38,9 @@ export const EffectSelector: React.FC<EffectSelectorProps> = ({ selectedId, onSe
       </span>
       {EFFECTS.map((effect) => {
         const isSelected = selectedId === effect.id;
-        const isStrange = effect.id === 'doctor-strange';
-        const isNaruto = effect.id === 'naruto-rasengan';
-        const isSpecial = isStrange || isNaruto || effect.id === 'burning-fireball';
+        const isStrange = effect.id === "doctor-strange";
+        const isNaruto = effect.id === "naruto-rasengan";
+        const isSpecial = isStrange || isNaruto || effect.id === "burning-fireball";
 
         return (
           <button
@@ -44,28 +49,30 @@ export const EffectSelector: React.FC<EffectSelectorProps> = ({ selectedId, onSe
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shrink-0 cursor-pointer ${
               isSelected
                 ? isStrange
-                  ? 'bg-neutral-900 border-2 border-amber-400 text-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.7)] scale-105'
+                  ? "bg-neutral-900 border-2 border-amber-400 text-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.7)] scale-105"
                   : isNaruto
-                  ? 'bg-neutral-900 border-2 border-cyan-400 text-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.7)] scale-105'
-                  : 'bg-neutral-900 border-2 border-orange-400 text-white shadow-[0_0_18px_rgba(234,88,12,0.5)] scale-105'
+                    ? "bg-neutral-900 border-2 border-cyan-400 text-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.7)] scale-105"
+                    : "bg-neutral-900 border-2 border-orange-400 text-white shadow-[0_0_18px_rgba(234,88,12,0.5)] scale-105"
                 : isStrange
-                ? 'bg-amber-950/40 hover:bg-neutral-900 text-amber-300 border border-amber-500/40 hover:border-amber-400/70'
-                : isNaruto
-                ? 'bg-cyan-950/40 hover:bg-neutral-900 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/60'
-                : 'bg-black/50 hover:bg-neutral-900 text-neutral-300 border border-white/10 hover:border-white/25'
+                  ? "bg-amber-950/40 hover:bg-neutral-900 text-amber-300 border border-amber-500/40 hover:border-amber-400/70"
+                  : isNaruto
+                    ? "bg-cyan-950/40 hover:bg-neutral-900 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/60"
+                    : "bg-black/50 hover:bg-neutral-900 text-neutral-300 border border-white/10 hover:border-white/25"
             }`}
           >
             {getIcon(effect.type)}
-            <span className={isStrange || isNaruto ? 'font-semibold' : ''}>{effect.name}</span>
+            <span className={isStrange || isNaruto ? "font-semibold" : ""}>{effect.name}</span>
             {isSpecial && (
-              <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-semibold border ${
-                isStrange
-                  ? 'bg-amber-500/25 text-amber-300 border-amber-400/50 animate-pulse'
-                  : isNaruto
-                  ? 'bg-cyan-500/25 text-cyan-300 border-cyan-400/50 animate-pulse'
-                  : 'bg-orange-500/20 text-orange-300 border-orange-500/30'
-              }`}>
-                {isStrange ? 'TAO MANDALA' : isNaruto ? 'JUTSU' : 'NEW'}
+              <span
+                className={`text-[9px] px-1.5 py-0.2 rounded-full font-semibold border ${
+                  isStrange
+                    ? "bg-amber-500/25 text-amber-300 border-amber-400/50 animate-pulse"
+                    : isNaruto
+                      ? "bg-cyan-500/25 text-cyan-300 border-cyan-400/50 animate-pulse"
+                      : "bg-orange-500/20 text-orange-300 border-orange-500/30"
+                }`}
+              >
+                {isStrange ? "TAO MANDALA" : isNaruto ? "JUTSU" : "NEW"}
               </span>
             )}
           </button>

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React, { Suspense, useRef } from 'react';
-import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
-import { CHARACTERS } from '../../data/characters';
-import { RobotCharacter } from './RobotCharacter';
-import { DogCharacter } from './DogCharacter';
-import { DragonCharacter } from './DragonCharacter';
-import { HologramSpinner } from './CharacterLoader';
+import React, { Suspense, useRef } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
+import { CHARACTERS } from "../../data/characters";
+import { RobotCharacter } from "./RobotCharacter";
+import { DogCharacter } from "./DogCharacter";
+import { DragonCharacter } from "./DragonCharacter";
+import { HologramSpinner } from "./CharacterLoader";
 
 interface CharacterRendererProps {
   characterId: string;
@@ -21,7 +21,7 @@ function QuantumObelisk({ animationName }: { animationName: string }) {
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
-    const speed = animationName === 'Overdrive' ? 4.0 : 1.5;
+    const speed = animationName === "Overdrive" ? 4.0 : 1.5;
     if (meshRef.current) {
       meshRef.current.rotation.y = t * speed;
       meshRef.current.position.y = 0.5 + Math.sin(t * 3) * 0.08;
@@ -59,7 +59,7 @@ class ModelErrorBoundary extends React.Component<
   { fallback: React.ReactNode; children: React.ReactNode },
   { hasError: boolean }
 > {
-  constructor(props: any) {
+  constructor(props: { fallback: React.ReactNode; children: React.ReactNode }) {
     super(props);
     this.state = { hasError: false };
   }
@@ -84,15 +84,15 @@ export const CharacterRenderer: React.FC<CharacterRendererProps> = ({
 
   const renderContent = () => {
     switch (config.id) {
-      case 'cyber-robot':
+      case "cyber-robot":
         return <RobotCharacter config={config} animationName={animationName} />;
-      case 'cyber-fox':
+      case "cyber-fox":
         return <DogCharacter config={config} animationName={animationName} />;
-      case 'holo-dragon':
+      case "holo-dragon":
         return <DragonCharacter config={config} animationName={animationName} />;
-      case 'holo-crystal':
+      case "holo-crystal":
         return <QuantumObelisk animationName={animationName} />;
-      case 'pure-vfx':
+      case "pure-vfx":
         return null;
       default:
         return <QuantumObelisk animationName={animationName} />;

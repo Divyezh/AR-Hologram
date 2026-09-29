@@ -1,6 +1,6 @@
-import * as THREE from 'three';
-import { NormalizedLandmark, Handedness } from '../../types/hand';
-import { HAND_LANDMARK } from '../../constants/landmarks';
+import * as THREE from "three";
+import { NormalizedLandmark, Handedness } from "../../types/hand";
+import { HAND_LANDMARK } from "../../constants/landmarks";
 
 export interface RawPalmData {
   center: { x: number; y: number; z: number };
@@ -20,7 +20,7 @@ export interface RawPalmData {
  */
 export function calculateRawPalmData(
   landmarks: NormalizedLandmark[],
-  handedness: Handedness | null = 'Right'
+  handedness: Handedness | null = "Right"
 ): RawPalmData | null {
   if (!landmarks || landmarks.length < 21) {
     return null;
@@ -35,7 +35,8 @@ export function calculateRawPalmData(
   // Knuckle arch center (MCP joints)
   const knuckleX = (indexMcp.x + middleMcp.x + ringMcp.x + pinkyMcp.x) * 0.25;
   const knuckleY = (indexMcp.y + middleMcp.y + ringMcp.y + pinkyMcp.y) * 0.25;
-  const knuckleZ = ((indexMcp.z || 0) + (middleMcp.z || 0) + (ringMcp.z || 0) + (pinkyMcp.z || 0)) * 0.25;
+  const knuckleZ =
+    ((indexMcp.z || 0) + (middleMcp.z || 0) + (ringMcp.z || 0) + (pinkyMcp.z || 0)) * 0.25;
 
   // True palm center: anatomical hollow of the palm (midpoint between wrist and knuckle arch)
   const centerX = wrist.x * 0.52 + knuckleX * 0.48;
@@ -50,7 +51,7 @@ export function calculateRawPalmData(
   // Vector across knuckles: from index MCP to pinky MCP
   const vIndex = new THREE.Vector3(indexMcp.x, -indexMcp.y, -indexMcp.z);
   const vPinky = new THREE.Vector3(pinkyMcp.x, -pinkyMcp.y, -pinkyMcp.z);
-  
+
   // Right vector across palm
   const vAcross = new THREE.Vector3().subVectors(vPinky, vIndex).normalize();
 
@@ -61,7 +62,7 @@ export function calculateRawPalmData(
   // Right hand: Pinky is at right (+X), Index is at left (-X). vAcross points right (+X). vUp points up (+Y).
   // vAcross cross vUp = [1, 0, 0] x [0, 1, 0] = [0, 0, 1] (+Z, towards camera, out of palm face).
   const vNormal = new THREE.Vector3();
-  if (handedness === 'Left') {
+  if (handedness === "Left") {
     vNormal.crossVectors(vUp, vAcross).normalize();
   } else {
     vNormal.crossVectors(vAcross, vUp).normalize();
@@ -81,7 +82,10 @@ export function calculateRawPalmData(
   //   We want the character to face the user (towards the wrist).
   //   Orthogonalize -vUp against yAxis:
   const zDir = vUp.clone().negate();
-  let zAxis = zDir.clone().sub(yAxis.clone().multiplyScalar(zDir.dot(yAxis))).normalize();
+  let zAxis = zDir
+    .clone()
+    .sub(yAxis.clone().multiplyScalar(zDir.dot(yAxis)))
+    .normalize();
   if (zAxis.lengthSq() < 0.001) {
     zAxis = new THREE.Vector3(0, 0, 1);
   }
@@ -95,7 +99,7 @@ export function calculateRawPalmData(
   rotMatrix.makeBasis(xAxis, yAxis, zAxis);
 
   const quaternion = new THREE.Quaternion().setFromRotationMatrix(rotMatrix);
-  const rotationEuler = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ');
+  const rotationEuler = new THREE.Euler().setFromQuaternion(quaternion, "XYZ");
 
   // Palm physical span (metric approximation in normalized coords)
   const dx = indexMcp.x - pinkyMcp.x;

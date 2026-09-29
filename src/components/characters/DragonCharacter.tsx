@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useRef } from 'react';
-import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
-import { CharacterConfig } from '../../types/character';
+import React, { useRef } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
+import { CharacterConfig } from "../../types/character";
 
 interface DragonCharacterProps {
   config: CharacterConfig;
@@ -19,7 +19,7 @@ export const DragonCharacter: React.FC<DragonCharacterProps> = ({ config, animat
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
-    const flapSpeed = animationName === 'Dive' ? 12 : animationName === 'Roar' ? 8 : 4.5;
+    const flapSpeed = animationName === "Dive" ? 12 : animationName === "Roar" ? 8 : 4.5;
     const flapAngle = Math.sin(t * flapSpeed) * 0.45;
 
     // Wing flapping
@@ -142,11 +142,7 @@ export const DragonCharacter: React.FC<DragonCharacterProps> = ({ config, animat
       <group ref={tailGroup} position={[0, -0.3, -0.08]}>
         <mesh position={[0, -0.2, -0.1]} rotation={[0.4, 0, 0]}>
           <coneGeometry args={[0.08, 0.45, 5]} />
-          <meshStandardMaterial
-            color="#1e1b4b"
-            emissive={accent}
-            emissiveIntensity={0.8}
-          />
+          <meshStandardMaterial color="#1e1b4b" emissive={accent} emissiveIntensity={0.8} />
         </mesh>
       </group>
     </group>

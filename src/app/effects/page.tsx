@@ -1,12 +1,12 @@
-import { Navbar } from '../../components/landing/Navbar';
-import { Footer } from '../../components/landing/Footer';
-import { EFFECTS } from '../../data/effects';
-import Link from 'next/link';
-import { Sparkles, ArrowRight, Wand2 } from 'lucide-react';
+import { Navbar } from "../../components/landing/Navbar";
+import { Footer } from "../../components/landing/Footer";
+import { EFFECTS } from "../../data/effects";
+import Link from "next/link";
+import { Sparkles, ArrowRight, Wand2 } from "lucide-react";
 
 export const metadata = {
-  title: 'VFX Magic Rings - AR Hologram Studio',
-  description: 'Explore the holographic shaders, runes, gyroscopic rings, and particle fields.',
+  title: "VFX Magic Rings - AR Hologram Studio",
+  description: "Explore the holographic shaders, runes, gyroscopic rings, and particle fields.",
 };
 
 export default function EffectsPage() {
@@ -23,7 +23,8 @@ export default function EffectsPage() {
             Holographic Magic Rings
           </h1>
           <p className="text-neutral-400 text-sm sm:text-base leading-relaxed">
-            Each magic ring is generated dynamically in Three.js using custom GLSL shaders, procedural rune mathematics, contra-rotating gyroscopic rings, and particle dust fields.
+            Each magic ring is generated dynamically in Three.js using custom GLSL shaders,
+            procedural rune mathematics, contra-rotating gyroscopic rings, and particle dust fields.
           </p>
         </div>
 
@@ -51,7 +52,9 @@ export default function EffectsPage() {
                 </div>
 
                 <h3 className="text-2xl font-bold text-white mb-2">{effect.name}</h3>
-                <p className="text-neutral-400 text-sm leading-relaxed mb-6">{effect.description}</p>
+                <p className="text-neutral-400 text-sm leading-relaxed mb-6">
+                  {effect.description}
+                </p>
 
                 <div className="grid grid-cols-2 gap-3 text-xs bg-black/50 p-4 rounded-2xl border border-white/5 font-mono mb-6">
                   <div>

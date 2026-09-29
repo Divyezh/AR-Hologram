@@ -1,12 +1,5 @@
 export type GestureType =
-  | 'NONE'
-  | 'OPEN_PALM'
-  | 'FIST'
-  | 'POINT'
-  | 'PEACE'
-  | 'PINCH'
-  | 'THUMBS_UP'
-  | 'ROCK';
+  "NONE" | "OPEN_PALM" | "FIST" | "POINT" | "PEACE" | "PINCH" | "THUMBS_UP" | "ROCK";
 
 export interface GestureDetectionResult {
   gesture: GestureType;

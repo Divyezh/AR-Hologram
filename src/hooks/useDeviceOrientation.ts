@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export interface DeviceOrientationState {
   isPortrait: boolean;
@@ -11,7 +11,7 @@ export interface DeviceOrientationState {
 
 export function useDeviceOrientation(): DeviceOrientationState {
   const [state, setState] = useState<DeviceOrientationState>(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return { isPortrait: false, innerWidth: 1280, innerHeight: 720, devicePixelRatio: 1 };
     }
     return {
@@ -32,12 +32,12 @@ export function useDeviceOrientation(): DeviceOrientationState {
       });
     };
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
     };
   }, []);
 

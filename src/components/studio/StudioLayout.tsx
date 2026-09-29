@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { useCamera } from '../../hooks/useCamera';
-import { useHandTracking } from '../../hooks/useHandTracking';
-import { usePalmAnchor } from '../../hooks/usePalmAnchor';
-import { useARState } from '../../hooks/useARState';
-import { CameraView } from '../camera/CameraView';
-import { CameraPermission } from '../camera/CameraPermission';
-import { CameraError } from '../camera/CameraError';
-import { AROverlay } from '../ar/AROverlay';
-import { ARLoading } from '../ar/ARLoading';
-import { StudioToolbar } from './StudioToolbar';
-import { StudioControls } from './StudioControls';
-import { EffectSelector } from './EffectSelector';
-import { DebugPanel } from './DebugPanel';
-import { EFFECTS } from '../../data/effects';
-import { soundManager } from '../../lib/audio/soundManager';
+import React, { useEffect, useState, useCallback } from "react";
+import { useCamera } from "../../hooks/useCamera";
+import { useHandTracking } from "../../hooks/useHandTracking";
+import { usePalmAnchor } from "../../hooks/usePalmAnchor";
+import { useARState } from "../../hooks/useARState";
+import { CameraView } from "../camera/CameraView";
+import { CameraPermission } from "../camera/CameraPermission";
+import { CameraError } from "../camera/CameraError";
+import { AROverlay } from "../ar/AROverlay";
+import { ARLoading } from "../ar/ARLoading";
+import { StudioToolbar } from "./StudioToolbar";
+import { StudioControls } from "./StudioControls";
+import { EffectSelector } from "./EffectSelector";
+import { DebugPanel } from "./DebugPanel";
+import { EFFECTS } from "../../data/effects";
+import { soundManager } from "../../lib/audio/soundManager";
 
 export const StudioLayout: React.FC = () => {
   const {
@@ -36,7 +36,7 @@ export const StudioLayout: React.FC = () => {
     setVideoElement,
   } = useCamera();
 
-  const isCameraActive = cameraStatus === 'active';
+  const isCameraActive = cameraStatus === "active";
 
   const {
     isReady: isTrackingReady,
@@ -107,16 +107,10 @@ export const StudioLayout: React.FC = () => {
     startCamera();
   }, [startCamera]);
 
-
-
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
       {/* 1. Base Camera Layer */}
-      <CameraView
-        ref={setVideoElement}
-        isActive={isCameraActive}
-        isMirrored={isMirrored}
-      />
+      <CameraView ref={setVideoElement} isActive={isCameraActive} isMirrored={isMirrored} />
 
       {/* 2. Real-time AR Three.js & Vision Tracking Overlay */}
       {isCameraActive && (
@@ -161,10 +155,7 @@ export const StudioLayout: React.FC = () => {
       {/* 4. Quick Effect Selector Bar on Main Video Screen */}
       <div className="absolute top-18 left-0 right-0 z-20 flex justify-center px-4 pointer-events-none">
         <div className="p-1 rounded-full bg-black/60 backdrop-blur-3xl border border-white/16 shadow-[0_12px_36px_rgba(0,0,0,0.5)] pointer-events-auto max-w-full overflow-x-auto scrollbar-none">
-          <EffectSelector
-            selectedId={arState.selectedEffectId}
-            onSelect={selectEffect}
-          />
+          <EffectSelector selectedId={arState.selectedEffectId} onSelect={selectEffect} />
         </div>
       </div>
 
@@ -183,20 +174,16 @@ export const StudioLayout: React.FC = () => {
       />
 
       {/* 5. Permission Modal (When camera is idle or requesting) */}
-      {(cameraStatus === 'idle' || cameraStatus === 'requesting') && (
+      {(cameraStatus === "idle" || cameraStatus === "requesting") && (
         <CameraPermission
           onGrantPermission={handleStartCamera}
-          isRequesting={cameraStatus === 'requesting'}
+          isRequesting={cameraStatus === "requesting"}
         />
       )}
 
       {/* 6. Camera Error Modal */}
-      {cameraStatus === 'error' && cameraError && (
-        <CameraError
-          error={cameraError}
-          errorType={errorType}
-          onRetry={handleRetryCamera}
-        />
+      {cameraStatus === "error" && cameraError && (
+        <CameraError error={cameraError} errorType={errorType} onRetry={handleRetryCamera} />
       )}
 
       {/* 7. Tracking Model Loading Screen */}
